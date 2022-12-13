@@ -3,6 +3,7 @@ import "react-native-gesture-handler";
 import { MainStore } from "./src/contexts/MainContext";
 import HomeScreenTabNavigation from "./src/navigations/HomeScreenTabNavigation";
 import MainDrawerNavigation from "./src/navigations/MainDrawerNavigation";
+import "react-native-get-random-values";
 
 export default function App() {
   return (
@@ -15,3 +16,4 @@ export default function App() {
     </NavigationContainer>
   );
 }
+//4158421d-2088-43c6-81e6-b0a85beafc07
