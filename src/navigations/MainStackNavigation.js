@@ -8,6 +8,8 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import ProfileScreen from "../screens/ProfileScreen";
 import NewsScreen from "../screens/NewsScreen";
 import MainContext from "../contexts/MainContext";
+import AttendanceScreen from "../screens/AttendanceScreen";
+import EmployeesScreen from "../screens/EmployeesScreen";
 // import { Icon } from "@rneui/base";
 
 const Stack = createStackNavigator();
@@ -73,6 +75,24 @@ const HomeScreenStackNavigator = (props) => {
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="AttendanceScreen"
+        component={AttendanceScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="EmployeesScreen"
+        component={EmployeesScreen}
         options={{
           title: "",
           headerTitleStyle: {},

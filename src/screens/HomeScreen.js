@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import React from "react";
 const { StatusBarManager } = NativeModules;
-import avatar from "../../assets/avatar.jpg";
 import come from "../../assets/homeScreen/come.png";
 import out from "../../assets/homeScreen/out.png";
 import Attendance from "../../assets/homeScreen/Attendance.png";
@@ -30,15 +29,16 @@ import {
   MAIN_COLOR_GREEN,
   MAIN_COLOR_RED,
 } from "../constant";
+import HeaderUser from "../components/HeaderUser";
 
-const HomeScreen = () => {
+const HomeScreen = (props) => {
   const menu = [
-    { img: Attendance, label: "Ирц" },
-    { img: request, label: "Хүсэлт" },
-    { img: task, label: "Даалгавар" },
-    { img: employee, label: "Ажилтан" },
-    { img: salary, label: "Цалин" },
-    { img: help, label: "Тусламж" },
+    { img: Attendance, label: "Ирц", nav: "AttendanceScreen" },
+    { img: request, label: "Хүсэлт", nav: "" },
+    { img: task, label: "Даалгавар", nav: "" },
+    { img: employee, label: "Ажилтан", nav: "EmployeesScreen" },
+    { img: salary, label: "Цалин", nav: "" },
+    { img: help, label: "Тусламж", nav: "" },
   ];
   const general_style = require("../style");
   return (
@@ -49,17 +49,8 @@ const HomeScreen = () => {
         paddingBottom: 80,
       }}
     >
-      <View style={styles.headerContainer}>
-        <View style={styles.headerFirstSection}>
-          <Image source={avatar} style={styles.userImg} />
-          <View style={styles.titleContainer}>
-            <Text style={styles.topText}>Сайн байна уу?</Text>
-            <Text style={styles.userName}>БҮРЭНЖАРГАЛ</Text>
-          </View>
-        </View>
-        <Icon type="feather" name="bell" size={30} />
-      </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
+      <HeaderUser />
+      <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
         <View style={styles.mainContainer}>
           <View style={styles.attendanceContainer}>
             <View style={styles.timeContainer}>
@@ -109,7 +100,11 @@ const HomeScreen = () => {
           <View style={styles.menuContainer}>
             {menu.map((el, index) => {
               return (
-                <TouchableOpacity style={styles.eachMenuContiner} key={index}>
+                <TouchableOpacity
+                  style={styles.eachMenuContiner}
+                  key={index}
+                  onPress={() => props.navigation.navigate(el.nav)}
+                >
                   <Image source={el.img} style={styles.eachMenuImg} />
                   <Text style={general_style.generalText}>{el.label}</Text>
                 </TouchableOpacity>
@@ -125,23 +120,6 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginVertical: 10,
-  },
-  headerFirstSection: {
-    flexDirection: "row",
-  },
-  userImg: {
-    width: 80,
-    height: 80,
-    borderRadius: 50,
-    resizeMode: "contain",
-    overflow: "hidden",
-  },
   mainContainer: {},
   attendanceContainer: {
     marginTop: 10,
@@ -169,18 +147,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     alignContent: "center",
     alignItems: "center",
-  },
-  titleContainer: {
-    flexDirection: "column",
-    marginTop: "5%",
-    marginLeft: "5%",
-  },
-  topText: {
-    color: MAIN_COLOR,
-    fontFamily: FONT_FAMILY_BOLD,
-  },
-  userName: {
-    fontFamily: FONT_FAMILY_LIGHT,
   },
   currentTime: {
     fontSize: 34,
