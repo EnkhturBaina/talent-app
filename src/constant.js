@@ -8,3 +8,33 @@ export const FONT_FAMILY_LIGHT = "Nunito-Light";
 
 export const MAIN_BORDER_RADIUS = 12;
 export const SERVER_URL = "url/";
+export const CUSTOM_INDEX_EMPLOYEE = [
+  "А",
+  "Б",
+  "В",
+  "Г",
+  "Д",
+  "Ё",
+  "Ж",
+  "З",
+  "И",
+  "К",
+  "Л",
+  "М",
+  "Н",
+  "О",
+  "Ө",
+  "П",
+  "Р",
+  "С",
+  "Т",
+  "У",
+  "Ү",
+  "Х",
+  "Ц",
+  "Ч",
+  "Ш",
+  "Э",
+  "Ю",
+  "Я",
+];

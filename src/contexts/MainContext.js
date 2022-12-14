@@ -24,6 +24,7 @@ export const MainStore = (props) => {
   const [token, setToken] = useState(""); //Хэрэглэгчийн TOKEN
   const [userData, setUserData] = useState(""); //Хэрэглэгчийн мэдээлэл
   const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
+  const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
 
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notification, setNotification] = useState(false);
@@ -102,6 +103,44 @@ export const MainStore = (props) => {
       "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
       "Nunito-Light": require("../../assets/fonts/Nunito-Light.ttf"),
     });
+    generateLast3Years();
+  };
+
+  const generateLast3Years = () => {
+    // Сүүлийн 3 жилийг сартай GENERATE хийх
+    var monthName = new Array(
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12"
+    );
+    var max = new Date().getFullYear();
+    var min = max - 2;
+    var years = [];
+    var yearsWithMonths = [];
+    var d = new Date();
+
+    for (var i = max; i >= min; i--) {
+      years.push(i);
+    }
+    years.map((el) => {
+      for (var i = 0; i <= 11; i++) {
+        yearsWithMonths.push({
+          id: el + "-" + monthName[d.getMonth()],
+          name: el + " - " + monthName[d.getMonth()] + " сар",
+        });
+        d.setMonth(d.getMonth() - 1);
+      }
+    });
+    setLast3Years(yearsWithMonths);
     setIsLoading(false);
   };
   useEffect(() => {
@@ -130,6 +169,7 @@ export const MainStore = (props) => {
         token,
         setToken,
         userData,
+        last3Years,
       }}
     >
       {props.children}

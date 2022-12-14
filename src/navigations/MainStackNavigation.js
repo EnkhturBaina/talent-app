@@ -4,12 +4,15 @@ import { createStackNavigator } from "@react-navigation/stack";
 import LoginScreen from "../screens/LoginScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet, TouchableOpacity, Text } from "react-native";
 import ProfileScreen from "../screens/ProfileScreen";
 import NewsScreen from "../screens/NewsScreen";
 import MainContext from "../contexts/MainContext";
 import AttendanceScreen from "../screens/AttendanceScreen";
 import EmployeesScreen from "../screens/EmployeesScreen";
+import { FONT_FAMILY_BOLD } from "../constant";
+import { Icon } from "@rneui/base";
+import RequestListScreen from "../screens/RequestListScreen";
 // import { Icon } from "@rneui/base";
 
 const Stack = createStackNavigator();
@@ -51,7 +54,7 @@ const LoginStackNavigator = (props) => {
               }}
             >
               {/* <Icon type="feather" name="arrow-left" /> */}
-              <Tex>BACK</Tex>
+              <Text>BACK</Text>
             </TouchableOpacity>
           ),
         }}
@@ -65,7 +68,7 @@ const HomeScreenStackNavigator = (props) => {
     <Stack.Navigator
       initialRouteName="HomeScreen"
       screenOptions={{
-        headerShown: false,
+        // headerShown: false,
         headerStyle: {
           shadowColor: "transparent", // this covers iOS
           elevation: 0, // this covers Android
@@ -76,6 +79,7 @@ const HomeScreenStackNavigator = (props) => {
         name="HomeScreen"
         component={HomeScreen}
         options={{
+          headerShown: false,
           title: "",
           headerTitleStyle: {},
           headerLeft: () => <></>,
@@ -86,8 +90,49 @@ const HomeScreenStackNavigator = (props) => {
         component={AttendanceScreen}
         options={{
           title: "",
-          headerTitleStyle: {},
-          headerLeft: () => <></>,
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftContainer}
+              onPress={() => {
+                props.navigation.goBack();
+              }}
+            >
+              <Icon
+                name="keyboard-arrow-left"
+                type="material-icons"
+                size={30}
+              />
+              <Text style={styles.headerLeftText}>Ирц</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="RequestListScreen"
+        component={RequestListScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftContainer}
+              onPress={() => {
+                props.navigation.goBack();
+              }}
+            >
+              <Icon
+                name="keyboard-arrow-left"
+                type="material-icons"
+                size={30}
+              />
+              <Text style={styles.headerLeftText}>Хүсэлт</Text>
+            </TouchableOpacity>
+          ),
         }}
       />
       <Stack.Screen
@@ -95,8 +140,24 @@ const HomeScreenStackNavigator = (props) => {
         component={EmployeesScreen}
         options={{
           title: "",
-          headerTitleStyle: {},
-          headerLeft: () => <></>,
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftContainer}
+              onPress={() => {
+                props.navigation.goBack();
+              }}
+            >
+              <Icon
+                name="keyboard-arrow-left"
+                type="material-icons"
+                size={30}
+              />
+              <Text style={styles.headerLeftText}>Ажилтан</Text>
+            </TouchableOpacity>
+          ),
         }}
       />
     </Stack.Navigator>
@@ -164,5 +225,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     flexDirection: "row",
     alignItems: "center",
+  },
+  headerLeftText: {
+    marginLeft: 10,
+    fontFamily: FONT_FAMILY_BOLD,
+    fontSize: 20,
+    width: "100%",
   },
 });

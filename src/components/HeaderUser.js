@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 50,
-    resizeMode: "contain",
+    // resizeMode: "contain",
     overflow: "hidden",
   },
   titleContainer: {

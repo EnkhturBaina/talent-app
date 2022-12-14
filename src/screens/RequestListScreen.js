@@ -21,7 +21,7 @@ import {
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 
-const AttendanceScreen = (props) => {
+const RequestListScreen = (props) => {
   const state = useContext(MainContext);
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
@@ -45,6 +45,20 @@ const AttendanceScreen = (props) => {
     >
       <HeaderUser />
       <View style={styles.headerActions}>
+        <Button
+          containerStyle={{}}
+          buttonStyle={{
+            backgroundColor: MAIN_COLOR,
+            borderRadius: MAIN_BORDER_RADIUS,
+            paddingVertical: 10,
+          }}
+          title="Хүсэлт илгээх"
+          titleStyle={{
+            fontSize: 16,
+            fontFamily: FONT_FAMILY_BOLD,
+          }}
+          onPress={() => login()}
+        />
         <TouchableOpacity
           style={styles.yearMonthPicker}
           onPress={() => setLookupData(state.last3Years, "name")}
@@ -55,7 +69,7 @@ const AttendanceScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <Text>AttendanceScreen</Text>
+      <Text>RequestScreen</Text>
 
       <BottomSheet
         bodyText={data}
@@ -69,12 +83,12 @@ const AttendanceScreen = (props) => {
   );
 };
 
-export default AttendanceScreen;
+export default RequestListScreen;
 
 const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     marginHorizontal: 20,
     alignItems: "center",
   },

@@ -34,7 +34,7 @@ import HeaderUser from "../components/HeaderUser";
 const HomeScreen = (props) => {
   const menu = [
     { img: Attendance, label: "Ирц", nav: "AttendanceScreen" },
-    { img: request, label: "Хүсэлт", nav: "" },
+    { img: request, label: "Хүсэлт", nav: "RequestListScreen" },
     { img: task, label: "Даалгавар", nav: "" },
     { img: employee, label: "Ажилтан", nav: "EmployeesScreen" },
     { img: salary, label: "Цалин", nav: "" },

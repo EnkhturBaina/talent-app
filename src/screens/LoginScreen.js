@@ -9,8 +9,7 @@ import {
   Platform,
 } from "react-native";
 import React, { useContext, useState } from "react";
-import { Icon } from "@rneui/themed";
-import { CheckBox, Button } from "@rneui/themed";
+import { Icon, CheckBox, Button } from "@rneui/themed";
 import MainContext from "../contexts/MainContext";
 import CustomSnackbar from "../components/CustomSnackbar";
 import talent_logo from "../../assets/talent_logo.png";
