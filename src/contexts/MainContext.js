@@ -19,6 +19,7 @@ Notifications.setNotificationHandler({
 
 export const MainStore = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); //Нэвтэрсэн эсэх
+  const [isLoginSuccess, setIsLoginSuccess] = useState(false); //Амжилттай нэвтэрсэн эсэх
   const [remember, setRemember] = useState(false); // Сануулсан эсэх
   const [mobileNumber, setMobileNumber] = useState(""); //Утасны дугаар
   const [token, setToken] = useState(""); //Хэрэглэгчийн TOKEN
@@ -148,12 +149,6 @@ export const MainStore = (props) => {
     getCustomFont();
   }, []);
 
-  const login = (mobile, password) => {
-    //Нэвтрэх Fn
-    console.log("mobile", mobile, "pass", password);
-    setIsLoggedIn(true);
-  };
-
   return (
     <MainContext.Provider
       value={{
@@ -163,13 +158,14 @@ export const MainStore = (props) => {
         setRemember,
         mobileNumber,
         setMobileNumber,
-        login,
         isLoading,
         setIsLoading,
         token,
         setToken,
         userData,
         last3Years,
+        isLoginSuccess,
+        setIsLoginSuccess,
       }}
     >
       {props.children}

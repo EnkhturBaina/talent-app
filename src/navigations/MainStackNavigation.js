@@ -13,6 +13,8 @@ import EmployeesScreen from "../screens/EmployeesScreen";
 import { FONT_FAMILY_BOLD } from "../constant";
 import { Icon } from "@rneui/base";
 import RequestListScreen from "../screens/RequestListScreen";
+import BiometricScreen from "../screens/BiometricScreen";
+import SendRequestScreen from "../screens/SendRequestScreen";
 // import { Icon } from "@rneui/base";
 
 const Stack = createStackNavigator();
@@ -21,9 +23,8 @@ const LoginStackNavigator = (props) => {
   const state = useContext(MainContext);
   return (
     <Stack.Navigator
-      initialRouteName="LoginTab"
+      initialRouteName={state.isloginSuccess ? "BiometricScreen" : "LoginTab"}
       screenOptions={{
-        headerShown: false,
         headerStyle: {
           shadowColor: "transparent", // this covers iOS
           elevation: 0, // this covers Android
@@ -55,6 +56,32 @@ const LoginStackNavigator = (props) => {
             >
               {/* <Icon type="feather" name="arrow-left" /> */}
               <Text>BACK</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="BiometricScreen"
+        component={BiometricScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftContainer}
+              onPress={() => {
+                props.navigation.goBack();
+              }}
+            >
+              <Icon
+                name="keyboard-arrow-left"
+                type="material-icons"
+                size={30}
+              />
+              <Text style={styles.headerLeftText}>Биометр баталгаажуулах</Text>
             </TouchableOpacity>
           ),
         }}
@@ -156,6 +183,31 @@ const HomeScreenStackNavigator = (props) => {
                 size={30}
               />
               <Text style={styles.headerLeftText}>Ажилтан</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="SendRequestScreen"
+        component={SendRequestScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              style={styles.headerLeftContainer}
+              onPress={() => {
+                props.navigation.goBack();
+              }}
+            >
+              <Icon
+                name="keyboard-arrow-left"
+                type="material-icons"
+                size={30}
+              />
+              <Text style={styles.headerLeftText}>Хүсэлт илгээх</Text>
             </TouchableOpacity>
           ),
         }}

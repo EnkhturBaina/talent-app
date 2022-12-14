@@ -52,7 +52,8 @@ const LoginScreen = (props) => {
     // } else {
     //   state.login(state.mobileNumber, password, state.remember);
     // }
-    state.login(state.mobileNumber, password, state.remember);
+    props.navigation.navigate("BiometricScreen");
+    state.setIsLoginSuccess(true);
   };
 
   return (

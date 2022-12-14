@@ -19,98 +19,80 @@ const HomeScreenTabNavigation = () => {
   const state = useContext(MainContext);
   if (state.isLoading) {
     return <SplashScreen />;
+  } else if (!state.isLoading && !state.isLoggedIn) {
+    return <LoginStackNavigator />;
   } else {
     return (
-      <>
-        {/* Хэрэглэгч нэвтэрсэн үед Bottom TAB харуулах */}
-        {state.isLoggedIn ? (
-          <Tab.Navigator
-            screenOptions={{
-              headerShown: false,
-              tabBarStyle: {
-                position: "absolute",
-                backgroundColor: "black",
-                borderRadius: 20,
-                height: 50,
-                marginHorizontal: 10,
-                paddingTop: Platform.OS === "ios" ? 10 : 15,
-                marginBottom: Platform.OS === "ios" ? 20 : 10,
-                alignItems: "center",
-              },
-            }}
-          >
-            <Tab.Screen
-              name="HomeTab"
-              component={HomeScreenStackNavigator}
-              options={{
-                title: "",
-                tabBarIcon: ({ focused }) => {
-                  return focused ? (
-                    <View style={styles.labelContainer}>
-                      <Text style={styles.tabLabel}>Нүүр</Text>
-                    </View>
-                  ) : (
-                    <View>
-                      <Image
-                        style={styles.tabIcon}
-                        source={home}
-                        color="#fff"
-                      />
-                    </View>
-                  );
-                },
-              }}
-            />
-            <Tab.Screen
-              name="NewsTab"
-              component={NewsScreenStackNavigator}
-              options={{
-                title: "",
-                tabBarIcon: ({ focused }) => {
-                  return focused ? (
-                    <View style={styles.labelContainer}>
-                      <Text style={styles.tabLabel}>Мэдээ</Text>
-                    </View>
-                  ) : (
-                    <View>
-                      <Image
-                        style={styles.tabIcon}
-                        source={news}
-                        color="#fff"
-                      />
-                    </View>
-                  );
-                },
-              }}
-            />
-            <Tab.Screen
-              name="ProfileTab"
-              component={ProfileStackNavigator}
-              options={{
-                title: "",
-                tabBarIcon: ({ focused }) => {
-                  return focused ? (
-                    <View style={styles.labelContainer}>
-                      <Text style={styles.tabLabel}>Профайл</Text>
-                    </View>
-                  ) : (
-                    <View>
-                      <Image
-                        style={styles.tabIcon}
-                        source={user}
-                        color="#fff"
-                      />
-                    </View>
-                  );
-                },
-              }}
-            />
-          </Tab.Navigator>
-        ) : (
-          // Хэрэглэгч нэвтрээгүй үед Login Screen харуулах
-          <LoginStackNavigator />
-        )}
-      </>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            position: "absolute",
+            backgroundColor: "black",
+            borderRadius: 20,
+            height: 50,
+            marginHorizontal: 10,
+            paddingTop: Platform.OS === "ios" ? 10 : 15,
+            marginBottom: Platform.OS === "ios" ? 20 : 10,
+            alignItems: "center",
+          },
+        }}
+      >
+        <Tab.Screen
+          name="HomeTab"
+          component={HomeScreenStackNavigator}
+          options={{
+            title: "",
+            tabBarIcon: ({ focused }) => {
+              return focused ? (
+                <View style={styles.labelContainer}>
+                  <Text style={styles.tabLabel}>Нүүр</Text>
+                </View>
+              ) : (
+                <View>
+                  <Image style={styles.tabIcon} source={home} color="#fff" />
+                </View>
+              );
+            },
+          }}
+        />
+        <Tab.Screen
+          name="NewsTab"
+          component={NewsScreenStackNavigator}
+          options={{
+            title: "",
+            tabBarIcon: ({ focused }) => {
+              return focused ? (
+                <View style={styles.labelContainer}>
+                  <Text style={styles.tabLabel}>Мэдээ</Text>
+                </View>
+              ) : (
+                <View>
+                  <Image style={styles.tabIcon} source={news} color="#fff" />
+                </View>
+              );
+            },
+          }}
+        />
+        <Tab.Screen
+          name="ProfileTab"
+          component={ProfileStackNavigator}
+          options={{
+            title: "",
+            tabBarIcon: ({ focused }) => {
+              return focused ? (
+                <View style={styles.labelContainer}>
+                  <Text style={styles.tabLabel}>Профайл</Text>
+                </View>
+              ) : (
+                <View>
+                  <Image style={styles.tabIcon} source={user} color="#fff" />
+                </View>
+              );
+            },
+          }}
+        />
+      </Tab.Navigator>
     );
   }
 };

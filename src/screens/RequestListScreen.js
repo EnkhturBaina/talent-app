@@ -57,7 +57,7 @@ const RequestListScreen = (props) => {
             fontSize: 16,
             fontFamily: FONT_FAMILY_BOLD,
           }}
-          onPress={() => login()}
+          onPress={() => props.navigation.navigate("SendRequestScreen")}
         />
         <TouchableOpacity
           style={styles.yearMonthPicker}

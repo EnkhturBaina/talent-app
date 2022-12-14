@@ -21,14 +21,8 @@ import {
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 
-const ResetPasswordScreen = (props) => {
+const SendRequestScreen = (props) => {
   const state = useContext(MainContext);
-
-  const setLookupData = (data, display) => {
-    setData(data); //Lookup -д харагдах дата
-    setDisplayName(display); //Lookup -д харагдах датаны текст талбар
-    setUselessParam(!uselessParam);
-  };
 
   useEffect(() => {}, []);
 
@@ -39,11 +33,11 @@ const ResetPasswordScreen = (props) => {
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
       }}
     >
-      <Text>ResetPasswordScreen</Text>
+      <Text>SendRequestScreen</Text>
     </SafeAreaView>
   );
 };
 
-export default ResetPasswordScreen;
+export default SendRequestScreen;
 
 const styles = StyleSheet.create({});
