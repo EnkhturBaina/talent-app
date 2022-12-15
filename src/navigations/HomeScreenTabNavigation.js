@@ -6,13 +6,14 @@ import news from "../../assets/tabIcons/news.png";
 import user from "../../assets/tabIcons/user.png";
 import {
   HomeScreenStackNavigator,
-  LoginStackNavigator,
   NewsScreenStackNavigator,
   ProfileStackNavigator,
 } from "./MainStackNavigation";
 import MainContext from "../contexts/MainContext";
 import { MAIN_COLOR } from "../constant";
 import SplashScreen from "../screens/SplashScreen";
+import BiometricScreen from "../screens/BiometricScreen";
+import LoginScreen from "../screens/LoginScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeScreenTabNavigation = () => {
@@ -20,7 +21,9 @@ const HomeScreenTabNavigation = () => {
   if (state.isLoading) {
     return <SplashScreen />;
   } else if (!state.isLoading && !state.isLoggedIn) {
-    return <LoginStackNavigator />;
+    return <LoginScreen />;
+  } else if (!state.isLoading && !state.isUseBio) {
+    return <BiometricScreen />;
   } else {
     return (
       <Tab.Navigator

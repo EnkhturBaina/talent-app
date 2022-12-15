@@ -117,6 +117,7 @@ const HomeScreenStackNavigator = (props) => {
         component={AttendanceScreen}
         options={{
           title: "",
+          headerShown: false,
           headerTitleStyle: {
             fontFamily: FONT_FAMILY_BOLD,
           },
@@ -142,6 +143,7 @@ const HomeScreenStackNavigator = (props) => {
         component={RequestListScreen}
         options={{
           title: "",
+          headerShown: false,
           headerTitleStyle: {
             fontFamily: FONT_FAMILY_BOLD,
           },
@@ -167,6 +169,7 @@ const HomeScreenStackNavigator = (props) => {
         component={EmployeesScreen}
         options={{
           title: "",
+          headerShown: false,
           headerTitleStyle: {
             fontFamily: FONT_FAMILY_BOLD,
           },

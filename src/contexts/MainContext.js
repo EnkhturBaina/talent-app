@@ -29,6 +29,7 @@ export const MainStore = (props) => {
   const [userData, setUserData] = useState(""); //Хэрэглэгчийн мэдээлэл
   const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
   const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
+  const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийсэн эсэх
 
   const navigation = useNavigation();
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -170,9 +171,10 @@ export const MainStore = (props) => {
             setUuid(uuid_value);
             setIsLoading(false);
             setIsLoginSuccess(true);
-            navigation.navigate("BiometricScreen");
+            // navigation.navigate("BiometricScreen");
           });
         } else {
+          setIsLoading(false);
           setIsLoginSuccess(false);
         }
       });
@@ -180,6 +182,11 @@ export const MainStore = (props) => {
       // error reading value
       console.log("checkUserData error======>", e);
     }
+  };
+  const logout = () => {
+    setIsLoggedIn(false);
+    setIsLoginSuccess(false);
+    AsyncStorage.removeItem("user");
   };
   return (
     <MainContext.Provider
@@ -203,6 +210,9 @@ export const MainStore = (props) => {
         companyId,
         setCompanyId,
         uuid,
+        logout,
+        isUseBiometric,
+        setIsUseBiometric,
       }}
     >
       {props.children}

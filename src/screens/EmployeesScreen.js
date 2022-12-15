@@ -67,7 +67,7 @@ const EmployeesScreen = (props) => {
       },
     })
       .then((response) => {
-        console.log("getCompanyEmployees======>", response.data.Extra);
+        // console.log("getCompanyEmployees======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setEmployees(response.data.Extra);
           setFilteredData(response.data.Extra);

@@ -74,6 +74,7 @@ const LoginScreen = (props) => {
     } else if (password == "") {
       onToggleSnackBar("Нууц үг оруулна уу.");
     } else {
+      state.setIsLoading(true);
       await axios({
         method: "post",
         url: `${SERVER_URL}/employee/mobile/login`,
@@ -96,14 +97,13 @@ const LoginScreen = (props) => {
                   user: response.data.Extra?.user,
                 })
               ).then(async (value) => {
-                await AsyncStorage.setItem(
-                  "uuid",
-                  "8bcf9a98-a111-4476-9612-922dd2e4ac07"
-                ).then((value) => {
+                await AsyncStorage.setItem("uuid", state.uuid).then((value) => {
                   console.log("THEN");
+                  state.setIsLoginSuccess(true);
+                  // props.navigation.navigate("BiometricScreen");
                 });
               });
-              console.log("RES", response.data);
+              // console.log("RES", response.data);
             } catch (e) {
               console.log("e====>", e);
             }
@@ -111,9 +111,7 @@ const LoginScreen = (props) => {
             console.log("WARNING", response.data.Msg);
           } else if (response.data?.Type == 2) {
           }
-
-          // props.navigation.navigate("BiometricScreen");
-          // state.setIsLoginSuccess(true);
+          state.setIsLoading(false);
         })
         .catch(function (error) {
           console.log("error", error);
@@ -151,7 +149,7 @@ const LoginScreen = (props) => {
             style={styles.generalInput}
             value={state.email}
             returnKeyType="done"
-            keyboardType="number-pad"
+            keyboardType="email-address"
             maxLength={8}
             onChangeText={(e) => {
               state.setEmail(e);

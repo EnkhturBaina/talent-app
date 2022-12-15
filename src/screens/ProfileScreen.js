@@ -9,14 +9,16 @@ import {
   TouchableOpacity,
   Share,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Button, Icon } from "@rneui/base";
 import { FONT_FAMILY_BOLD, MAIN_COLOR, MAIN_COLOR_GRAY } from "../constant";
 import HeaderUser from "../components/HeaderUser";
 import { Switch } from "react-native-paper";
 const { StatusBarManager } = NativeModules;
+import MainContext from "../contexts/MainContext";
 
 const ProfileScreen = (props) => {
+  const state = useContext(MainContext);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
 
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
@@ -63,6 +65,12 @@ const ProfileScreen = (props) => {
       label: "Хэл солих",
       nav: "",
       render: <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>Монгол</Text>,
+    },
+    {
+      img: "log-out",
+      label: "Гарах",
+      nav: "",
+      action: () => state.logout(),
     },
   ];
 
