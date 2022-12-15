@@ -6,7 +6,7 @@ import {
   NativeModules,
   Platform,
   TouchableOpacity,
-  Touchable,
+  ScrollView,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon, CheckBox, Button } from "@rneui/themed";
@@ -23,6 +23,7 @@ const { StatusBarManager } = NativeModules;
 
 const RequestListScreen = (props) => {
   const state = useContext(MainContext);
+  const general_style = require("../style");
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
@@ -69,7 +70,26 @@ const RequestListScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <Text>RequestScreen</Text>
+      <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
+        <View style={styles.requestContainer}>
+          <View style={styles.stack1}>
+            <Text style={general_style.generalTextBold}>
+              Ирц нөхөж бүртгүүлэх
+            </Text>
+            <View>
+              <Text style={[general_style.generalText, { fontSize: 12 }]}>
+                Эхлэх: 2022-12-09 18:00
+              </Text>
+              <Text style={[general_style.generalText, { fontSize: 12 }]}>
+                Дуусах: 2022-12-09 19:00
+              </Text>
+            </View>
+          </View>
+          <View style={styles.stack2}>
+            <Text>Өглөөний ирцээ бүртгүүлэхээ мартсан байна.</Text>
+          </View>
+        </View>
+      </ScrollView>
 
       <BottomSheet
         bodyText={data}
@@ -104,5 +124,16 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 5,
     alignSelf: "flex-start",
+  },
+  requestContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    borderLeftColor: MAIN_COLOR,
+    borderLeftWidth: 10,
+    borderRightColor: MAIN_COLOR,
+    borderRightWidth: 10,
+  },
+  stack1: {
+    backgroundColor: "gray",
   },
 });

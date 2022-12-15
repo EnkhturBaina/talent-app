@@ -6,8 +6,11 @@ export const MAIN_COLOR_RED = "#FF6100";
 export const FONT_FAMILY_BOLD = "Nunito-Bold";
 export const FONT_FAMILY_LIGHT = "Nunito-Light";
 
+// type === 0 SUCCESS
+// type === 1 WARNING
+// type === 2 ERROR
 export const MAIN_BORDER_RADIUS = 12;
-export const SERVER_URL = "url/";
+export const SERVER_URL = "https://api.talent.mn/api";
 export const CUSTOM_INDEX_EMPLOYEE = [
   "А",
   "Б",

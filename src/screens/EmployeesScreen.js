@@ -11,17 +11,16 @@ import {
   Dimensions,
   Linking,
 } from "react-native";
-import React, { useRef, useState } from "react";
-import { Button, Icon } from "@rneui/base";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import HeaderUser from "../components/HeaderUser";
-import { Divider, Searchbar } from "react-native-paper";
+import { Searchbar } from "react-native-paper";
 import {
   CUSTOM_INDEX_EMPLOYEE,
   FONT_FAMILY_BOLD,
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR_GRAY,
-  MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 import avatar from "../../assets/avatar.jpg";
 const { StatusBarManager } = NativeModules;
@@ -29,37 +28,67 @@ import { AlphabetList } from "react-native-section-alphabet-list";
 import RBSheet from "react-native-raw-bottom-sheet";
 import call from "../../assets/call.png";
 import sms from "../../assets/sms.png";
+import email from "../../assets/email.png";
+import axios from "axios";
+import MainContext from "../contexts/MainContext";
+import Loader from "../components/Loader";
 
 const EmployeesScreen = (props) => {
+  const state = useContext(MainContext);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState("");
   const [searchVal, setSearchVal] = useState("");
   const sheetRef = useRef(); //Bottomsheet
-  const [data, setData] = useState([
-    { value: "Гillie-Mai Allen", key: "lCUTs2" },
-    { value: "Цmmanuel Goldstein", key: "TXdL0c" },
-    { value: "Дinston Smith", key: "zqsiEw" },
-    { value: "Дilliam Blazkowicz", key: "psg2PM" },
-    { value: "Дordon Comstock", key: "1K6I18" },
-    { value: "Оhilip Ravelston", key: "NVHSkA" },
-    { value: "Жosemary Waterlow", key: "SaHqyG" },
-    { value: "Зulia Comstock", key: "iaT1Ex" },
-    { value: "Рihai Maldonado", key: "OvMd5e" },
-    { value: "Бurtaza Molina", key: "25zqAO" },
-    { value: "Өeter Petigrew", key: "8cWuu3" },
-  ]);
-  const [filteredData, setFilteredData] = useState(data);
-  var randoms = [...Array(20)].map(() => Math.floor(Math.random() * 9));
+  const [filteredData, setFilteredData] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(true);
+
   const onChangeSearch = (query) => {
     setSearchVal(query);
-    let newData = data.filter((el) => {
+    let newData = employees.filter((el) => {
       if (
-        el.value?.toLowerCase()?.includes(query?.toLowerCase()) ||
-        el.key?.toLowerCase()?.includes(query?.toLowerCase())
+        el.FullName?.toLowerCase()?.includes(query?.toLowerCase()) ||
+        el.Position?.toLowerCase()?.includes(query?.toLowerCase())
       ) {
         return el;
       }
     });
     setFilteredData(newData);
   };
+
+  const getCompanyEmployees = async () => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/employee/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMCompanyId: state.companyId,
+      },
+    })
+      .then((response) => {
+        console.log("getCompanyEmployees======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setEmployees(response.data.Extra);
+          setFilteredData(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingEmployees(false);
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      });
+  };
+
+  useEffect(() => {
+    getCompanyEmployees();
+  }, []);
+
+  if (loadingEmployees) {
+    return <Loader />;
+  }
   return (
     <SafeAreaView
       style={{
@@ -89,23 +118,19 @@ const EmployeesScreen = (props) => {
               marginVertical: 15,
             }}
           >
-            {randoms.map((el, index) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => sheetRef.current.open()}
-                  style={styles.favContainer}
-                  key={index}
-                >
-                  <Image source={avatar} style={styles.favUserImg} />
-                  <Text numberOfLines={1}>Ana DavisssDavisssssss</Text>
-                </TouchableOpacity>
-              );
-            })}
+            <TouchableOpacity
+              onPress={() => sheetRef.current.open()}
+              style={styles.favContainer}
+            >
+              <Image source={avatar} style={styles.favUserImg} />
+              <Text numberOfLines={1}>Ana DavisssDavisssssss</Text>
+            </TouchableOpacity>
           </ScrollView>
         </View>
+
         {filteredData && filteredData != "" ? (
           <AlphabetList
-            data={searchVal ? filteredData : data}
+            data={searchVal ? filteredData : employees}
             index={CUSTOM_INDEX_EMPLOYEE}
             uncategorizedAtTop={true}
             style={styles.contactsContainer}
@@ -124,33 +149,25 @@ const EmployeesScreen = (props) => {
               fontFamily: FONT_FAMILY_BOLD,
             }}
             renderCustomItem={(item) => (
-              <View style={styles.listItemContainer}>
+              <TouchableOpacity
+                style={styles.listItemContainer}
+                onPress={() => {
+                  setSelectedEmployee(item);
+                  sheetRef.current.open();
+                }}
+              >
                 <View
                   style={{
                     flexDirection: "row",
                   }}
                 >
-                  <Image source={avatar} style={styles.userImg} />
+                  <Image source={{ uri: item.Image }} style={styles.userImg} />
                   <View style={{ flexDirection: "column", marginLeft: 10 }}>
                     <Text style={styles.listItemLabel}>{item.value}</Text>
-                    <Text style={styles.listItemDep}>
-                      Human resource director
-                    </Text>
+                    <Text style={styles.listItemDep}>{item.Position}</Text>
                   </View>
                 </View>
-                <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL(`tel://94908577`)}
-                  >
-                    <Image source={call} style={styles.actionIcon} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL(`sms://94908577`)}
-                  >
-                    <Image source={sms} style={styles.actionIcon} />
-                  </TouchableOpacity>
-                </View>
-              </View>
+              </TouchableOpacity>
             )}
             renderCustomSectionHeader={(section) => (
               <View style={styles.sectionHeaderContainer}>
@@ -164,7 +181,7 @@ const EmployeesScreen = (props) => {
       </View>
       <RBSheet
         ref={sheetRef}
-        height={150}
+        height={300}
         closeOnDragDown={true} //sheet -г доош чирж хаах
         closeOnPressMask={true} //sheet -н гадна дарж хаах
         customStyles={{
@@ -180,34 +197,49 @@ const EmployeesScreen = (props) => {
         }}
       >
         <View style={styles.bottomSheetContainer}>
-          <View style={styles.lookupcontainer}>
-            <View style={styles.listItemContainer}>
-              <View
-                style={{
-                  flexDirection: "row",
-                }}
+          <View style={styles.lookupContainer}>
+            <Image
+              source={{ uri: selectedEmployee.Image }}
+              style={styles.userImgBottomSheet}
+            />
+            <Text style={styles.userNameBottomSheet}>
+              {selectedEmployee.FullName}
+            </Text>
+            <Text style={styles.listItemDep}>{selectedEmployee.Position}</Text>
+            <View style={{ flexDirection: "row", marginTop: 10 }}>
+              <TouchableOpacity
+                style={styles.listItemContainer}
+                onPress={() =>
+                  selectedEmployee.Mobile
+                    ? Linking.openURL(`tel://${selectedEmployee.Mobile}`)
+                    : null
+                }
               >
-                <Image source={avatar} style={styles.userImg} />
-                <View style={{ flexDirection: "column", marginLeft: 10 }}>
-                  <Text style={styles.listItemLabel}>AAAA</Text>
-                  <Text style={styles.listItemDep}>
-                    Human resource director
-                  </Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: "row" }}>
-                <TouchableOpacity
-                  onPress={() => Linking.openURL(`tel://94908577`)}
-                >
-                  <Image source={call} style={styles.actionIcon} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => Linking.openURL(`sms://94908577`)}
-                >
-                  <Image source={sms} style={styles.actionIcon} />
-                </TouchableOpacity>
-              </View>
+                <Image source={call} style={styles.actionIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.listItemContainer}
+                onPress={() =>
+                  selectedEmployee.Mobile
+                    ? Linking.openURL(`sms://${selectedEmployee.Mobile}`)
+                    : null
+                }
+              >
+                <Image source={sms} style={styles.actionIcon} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.listItemContainer}
+                onPress={() =>
+                  selectedEmployee.email
+                    ? Linking.openURL(`mailto://${selectedEmployee.email}`)
+                    : null
+                }
+              >
+                <Image source={email} style={styles.actionIcon} />
+              </TouchableOpacity>
             </View>
+            <Text style={styles.listItemDep}>{selectedEmployee.email}</Text>
+            <Text style={styles.listItemDep}>{selectedEmployee.Mobile}</Text>
           </View>
         </View>
       </RBSheet>
@@ -268,6 +300,13 @@ const styles = StyleSheet.create({
     // resizeMode: "contain",
     overflow: "hidden",
   },
+  userImgBottomSheet: {
+    width: 80,
+    height: 80,
+    borderRadius: 50,
+    // resizeMode: "contain",
+    overflow: "hidden",
+  },
   actionIcon: {
     width: 30,
     height: 30,
@@ -290,6 +329,12 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY_BOLD,
     fontSize: 18,
   },
+  userNameBottomSheet: {
+    fontFamily: FONT_FAMILY_BOLD,
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 15,
+  },
   listItemDep: {
     fontFamily: FONT_FAMILY_LIGHT,
   },
@@ -306,16 +351,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
   },
-  lookupcontainer: {
+  lookupContainer: {
     width: "100%",
     height: "100%",
-    justifyContent: "flex-start",
+    flexDirection: "column",
     paddingBottom: Platform.OS == "ios" ? 30 : 25,
-  },
-  bottomSheetBodyLookup: {
-    fontFamily: FONT_FAMILY_BOLD,
-    fontSize: 18,
-    padding: 10,
-    color: MAIN_COLOR,
+    alignItems: "center",
   },
 });

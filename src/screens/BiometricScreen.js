@@ -45,6 +45,10 @@ const BiometricScreen = (props) => {
         : null;
     })();
   };
+
+  const skipBio = () => {
+    state.setIsLoggedIn(true);
+  };
   return (
     <SafeAreaView
       style={{
@@ -106,7 +110,10 @@ const BiometricScreen = (props) => {
           }}
           onPress={() => confirmBio()}
         />
-        <TouchableOpacity style={styles.skipContainer}>
+        <TouchableOpacity
+          style={styles.skipContainer}
+          onPress={() => skipBio()}
+        >
           <Text style={styles.skipBtn}>Алгасах</Text>
         </TouchableOpacity>
       </View>
@@ -126,6 +133,7 @@ const styles = StyleSheet.create({
   },
   skipContainer: {
     padding: 10,
+    marginTop: 10,
   },
   skipBtn: {
     fontFamily: FONT_FAMILY_LIGHT,

@@ -1,17 +1,18 @@
 import { Icon } from "@rneui/base";
-import React from "react";
+import React, { useContext } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
-import avatar from "../../assets/avatar.jpg";
-import { FONT_FAMILY_BOLD, FONT_FAMILY_LIGHT, MAIN_COLOR } from "../constant";
+import { FONT_FAMILY_BOLD, MAIN_COLOR } from "../constant";
+import MainContext from "../contexts/MainContext";
 
 function HeaderUser() {
+  const state = useContext(MainContext);
   return (
     <View style={styles.headerContainer}>
       <View style={styles.headerFirstSection}>
-        <Image source={avatar} style={styles.userImg} />
+        <Image source={{ uri: state.userData?.Image }} style={styles.userImg} />
         <View style={styles.titleContainer}>
           <Text style={styles.topText}>Сайн байна уу?</Text>
-          <Text style={styles.userName}>БҮРЭНЖАРГАЛ</Text>
+          <Text style={styles.userName}>{state.userData.FirstName}</Text>
         </View>
       </View>
       <Icon type="feather" name="bell" size={30} />
@@ -49,6 +50,7 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY_BOLD,
   },
   userName: {
-    fontFamily: FONT_FAMILY_LIGHT,
+    fontFamily: FONT_FAMILY_BOLD,
+    fontSize: 26,
   },
 });

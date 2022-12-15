@@ -19,11 +19,15 @@ import {
   MAIN_COLOR_GRAY,
   MAIN_BORDER_RADIUS,
   FONT_FAMILY_BOLD,
+  SERVER_URL,
 } from "../constant";
+import { v4 as uuidv4 } from "uuid";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const LoginScreen = (props) => {
   const state = useContext(MainContext);
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("Credo1234@");
   const [hidePassword, setHidePassword] = useState(true);
 
   const [visibleSnack, setVisibleSnack] = useState(false);
@@ -44,16 +48,77 @@ const LoginScreen = (props) => {
     setHidePassword(!hidePassword);
   };
 
-  const login = () => {
-    // if (state.mobileNumber == "") {
-    //   onToggleSnackBar("Утасны дугаар оруулна уу.");
-    // } else if (password == "") {
-    //   onToggleSnackBar("Нууц үг оруулна уу.");
-    // } else {
-    //   state.login(state.mobileNumber, password, state.remember);
-    // }
-    props.navigation.navigate("BiometricScreen");
-    state.setIsLoginSuccess(true);
+  const resetUUID = async () => {
+    console.log("state.token", state.token);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/reset`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMCompanyId: 1,
+        ERPEmployeeId: 1,
+      },
+    })
+      .then(async (response) => {
+        console.log("resetUUID =====>", response.data);
+      })
+      .catch(function (error) {
+        console.log("resetUUID error=====>", error);
+      });
+  };
+  const login = async () => {
+    if (state.emaal == "") {
+      onToggleSnackBar("И-мэйл хаягаа оруулна уу.");
+    } else if (password == "") {
+      onToggleSnackBar("Нууц үг оруулна уу.");
+    } else {
+      await axios({
+        method: "post",
+        url: `${SERVER_URL}/employee/mobile/login`,
+        data: {
+          email: state.email,
+          password: password,
+          MobileUUID: state.uuid ? state.uuid : uuidv4(),
+        },
+      })
+        .then(async (response) => {
+          if (response.data?.Type == 0) {
+            try {
+              state.setToken(response.data.Extra?.access_token);
+              state.setUserId(response.data.Extra?.user?.id);
+              state.setCompanyId(response.data.Extra?.user?.GMCompanyId);
+              await AsyncStorage.setItem(
+                "user",
+                JSON.stringify({
+                  token: response.data.Extra?.access_token,
+                  user: response.data.Extra?.user,
+                })
+              ).then(async (value) => {
+                await AsyncStorage.setItem(
+                  "uuid",
+                  "8bcf9a98-a111-4476-9612-922dd2e4ac07"
+                ).then((value) => {
+                  console.log("THEN");
+                });
+              });
+              console.log("RES", response.data);
+            } catch (e) {
+              console.log("e====>", e);
+            }
+          } else if (response.data?.Type == 1) {
+            console.log("WARNING", response.data.Msg);
+          } else if (response.data?.Type == 2) {
+          }
+
+          // props.navigation.navigate("BiometricScreen");
+          // state.setIsLoginSuccess(true);
+        })
+        .catch(function (error) {
+          console.log("error", error);
+        });
+    }
   };
 
   return (
@@ -77,17 +142,19 @@ const LoginScreen = (props) => {
         <View style={styles.loginImageContainer}>
           <Image style={styles.loginImg} source={talent_logo} />
         </View>
+        <Button title="RESET UUID" onPress={() => resetUUID()} />
+        <Text>Credo1234@</Text>
         <View style={styles.stackSection}>
           <TextInput
-            label="Утас"
+            label="И-мэйл"
             mode="outlined"
             style={styles.generalInput}
-            value={state.mobileNumber}
+            value={state.email}
             returnKeyType="done"
             keyboardType="number-pad"
             maxLength={8}
             onChangeText={(e) => {
-              state.setMobileNumber(e);
+              state.setEmail(e);
             }}
             theme={{
               fonts: {
