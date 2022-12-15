@@ -20,9 +20,13 @@ const HomeScreenTabNavigation = () => {
   const state = useContext(MainContext);
   if (state.isLoading) {
     return <SplashScreen />;
-  } else if (!state.isLoading && !state.isLoggedIn) {
+  } else if (!state.isLoading && !state.isLoginSuccess) {
     return <LoginScreen />;
-  } else if (!state.isLoading && !state.isUseBio) {
+  } else if (
+    !state.isLoading &&
+    state.isUseBiometric == "yes" &&
+    !state.isLoggedIn
+  ) {
     return <BiometricScreen />;
   } else {
     return (

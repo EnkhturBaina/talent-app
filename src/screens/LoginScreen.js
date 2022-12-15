@@ -74,18 +74,23 @@ const LoginScreen = (props) => {
     } else if (password == "") {
       onToggleSnackBar("Нууц үг оруулна уу.");
     } else {
-      state.setIsLoading(true);
+      var tempUUID = uuidv4();
+      console.log("tempUUID", tempUUID);
+      console.log("state.uuid", state.uuid);
       await axios({
         method: "post",
         url: `${SERVER_URL}/employee/mobile/login`,
         data: {
           email: state.email,
           password: password,
-          MobileUUID: state.uuid ? state.uuid : uuidv4(),
+          // MobileUUID: state.uuid ? state.uuid : tempUUID,
+          MobileUUID: "812206e1-7a92-4f7d-98b4-10e06cb5dfee",
         },
       })
         .then(async (response) => {
+          console.log("RES", response.data);
           if (response.data?.Type == 0) {
+            state.setIsLoading(true);
             try {
               state.setToken(response.data.Extra?.access_token);
               state.setUserId(response.data.Extra?.user?.id);
@@ -97,21 +102,21 @@ const LoginScreen = (props) => {
                   user: response.data.Extra?.user,
                 })
               ).then(async (value) => {
-                await AsyncStorage.setItem("uuid", state.uuid).then((value) => {
+                await AsyncStorage.setItem("uuid", tempUUID).then((value) => {
                   console.log("THEN");
                   state.setIsLoginSuccess(true);
+                  state.setIsLoading(false);
                   // props.navigation.navigate("BiometricScreen");
                 });
               });
-              // console.log("RES", response.data);
             } catch (e) {
               console.log("e====>", e);
             }
           } else if (response.data?.Type == 1) {
-            console.log("WARNING", response.data.Msg);
+            onToggleSnackBar(response.data.Msg);
           } else if (response.data?.Type == 2) {
+            onToggleSnackBar(response.data.Msg);
           }
-          state.setIsLoading(false);
         })
         .catch(function (error) {
           console.log("error", error);
@@ -224,7 +229,9 @@ const LoginScreen = (props) => {
             checkedColor={MAIN_COLOR}
             uncheckedColor={MAIN_COLOR}
           />
-          <TouchableOpacity onPress={() => props.navigation.navigate("Reset")}>
+          <TouchableOpacity
+            onPress={() => props.navigation.navigate("ResetPassword")}
+          >
             <Text
               style={{
                 textDecorationLine: "underline",

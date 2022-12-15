@@ -103,7 +103,10 @@ const EmployeesScreen = (props) => {
           placeholder="Нэр, баг, хэлтэсээр хайх..."
           onChangeText={onChangeSearch}
           value={searchVal}
-          inputStyle={{ backgroundColor: "#fff" }}
+          inputStyle={{
+            backgroundColor: "#fff",
+            fontFamily: FONT_FAMILY_LIGHT,
+          }}
           style={styles.searchBar}
           elevation={0}
         />
@@ -310,8 +313,7 @@ const styles = StyleSheet.create({
   actionIcon: {
     width: 30,
     height: 30,
-    marginLeft: 10,
-    marginRight: 15,
+    marginHorizontal: 10,
   },
   listItemContainer: {
     flexDirection: "row",

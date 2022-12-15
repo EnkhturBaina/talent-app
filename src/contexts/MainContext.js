@@ -111,6 +111,7 @@ export const MainStore = (props) => {
     });
     generateLast3Years();
     checkUserData();
+    // logout();
   };
 
   const generateLast3Years = () => {
@@ -158,25 +159,31 @@ export const MainStore = (props) => {
     // AsyncStorage.removeItem("user");
     // AsyncStorage.removeItem("uuid");
     try {
-      await AsyncStorage.getItem("user").then(async (user_value) => {
-        if (user_value != null) {
-          const JSONValue = JSON.parse(user_value);
-          // console.log("USER VALUE ====>", JSONValue);
-          setUserData(JSONValue.user);
-          setToken(JSONValue.token);
-          setUserId(JSONValue.user?.id);
-          setCompanyId(JSONValue.user?.GMCompanyId);
-          await AsyncStorage.getItem("uuid").then((uuid_value) => {
-            // console.log("UUID VALUE ====>", uuid_value);
-            setUuid(uuid_value);
-            setIsLoading(false);
-            setIsLoginSuccess(true);
+      await AsyncStorage.getItem("uuid").then(async (uuid_value) => {
+        setUuid(uuid_value);
+        console.log("UUID VALUE ====>", uuid_value);
+        await AsyncStorage.getItem("user").then(async (user_value) => {
+          if (user_value != null) {
+            const JSONValue = JSON.parse(user_value);
+            console.log("USER VALUE ====>", JSONValue);
+            setUserData(JSONValue.user);
+            setToken(JSONValue.token);
+            setUserId(JSONValue.user?.id);
+            setCompanyId(JSONValue.user?.GMCompanyId);
             // navigation.navigate("BiometricScreen");
-          });
-        } else {
-          setIsLoading(false);
-          setIsLoginSuccess(false);
-        }
+            await AsyncStorage.getItem("use_bio").then(async (bio_value) => {
+              console.log("BIO VALUE ====>", bio_value);
+              setIsUseBiometric(bio_value);
+              setIsLoading(false);
+              setIsLoginSuccess(true);
+              setIsLoggedIn(true);
+            });
+          } else {
+            setIsLoading(false);
+            setIsLoginSuccess(false);
+            setIsLoggedIn(false);
+          }
+        });
       });
     } catch (e) {
       // error reading value

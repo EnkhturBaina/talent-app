@@ -103,7 +103,9 @@ const HomeScreen = (props) => {
                 <TouchableOpacity
                   style={styles.eachMenuContiner}
                   key={index}
-                  onPress={() => props.navigation.navigate(el.nav)}
+                  onPress={() =>
+                    el.nav ? props.navigation.navigate(el.nav) : null
+                  }
                 >
                   <Image source={el.img} style={styles.eachMenuImg} />
                   <Text style={general_style.generalText}>{el.label}</Text>

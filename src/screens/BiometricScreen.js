@@ -19,6 +19,7 @@ import {
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 import LottieView from "lottie-react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BiometricScreen = (props) => {
   const state = useContext(MainContext);
@@ -37,9 +38,13 @@ const BiometricScreen = (props) => {
             console.log("auth", auth);
             if (auth.success) {
               setGrantAccess(true);
-              state.setIsLoggedIn(true);
+              await AsyncStorage.setItem("use_bio", "yes").then((value) => {
+                state.setIsUseBiometric("yes");
+                state.setIsLoggedIn(true);
+              });
             } else {
               setGrantAccess(false);
+              state.setIsLoggedIn(true);
             }
           })()
         : null;
