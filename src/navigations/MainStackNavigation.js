@@ -42,7 +42,7 @@ const LoginStackNavigator = (props) => {
         }}
       />
       <Stack.Screen
-        name="Reset"
+        name="ResetPassword"
         component={ResetPasswordScreen}
         options={{
           title: "Нууц үг сэргээх",
