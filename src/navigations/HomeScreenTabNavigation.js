@@ -6,6 +6,7 @@ import news from "../../assets/tabIcons/news.png";
 import user from "../../assets/tabIcons/user.png";
 import {
   HomeScreenStackNavigator,
+  LoginStackNavigator,
   NewsScreenStackNavigator,
   ProfileStackNavigator,
 } from "./MainStackNavigation";
@@ -20,15 +21,13 @@ const HomeScreenTabNavigation = () => {
   const state = useContext(MainContext);
   if (state.isLoading) {
     return <SplashScreen />;
-  } else if (!state.isLoading && !state.isLoginSuccess) {
-    return <LoginScreen />;
-  } else if (
-    !state.isLoading &&
-    state.isUseBiometric == "yes" &&
-    !state.isLoggedIn
-  ) {
-    return <BiometricScreen />;
-  } else {
+  } else if (!state.isLoading && !state.isLoggedIn) {
+    return <LoginStackNavigator />;
+  }
+  // else if (!state.isLoading && state.isUseBiometric && !state.isLoggedIn) {
+  //   return <BiometricScreen />;
+  // }
+  else {
     return (
       <Tab.Navigator
         screenOptions={{

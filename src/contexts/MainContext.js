@@ -6,6 +6,8 @@ import * as Font from "expo-font";
 import * as Notifications from "expo-notifications";
 import { useNavigation } from "@react-navigation/native";
 
+// Credo1234@
+
 const MainContext = React.createContext();
 
 //Notification тохиргоо
@@ -22,14 +24,14 @@ export const MainStore = (props) => {
   const [companyId, setCompanyId] = useState(""); //Нэвтэрсэн хэрэглэгчийн COMPANY_ID
   const [uuid, setUuid] = useState(""); //UUID
   const [isLoggedIn, setIsLoggedIn] = useState(false); //Нэвтэрсэн эсэх
-  const [isLoginSuccess, setIsLoginSuccess] = useState(false); //Амжилттай нэвтэрсэн эсэх
-  const [remember, setRemember] = useState(false); // Сануулсан эсэх
   const [email, setEmail] = useState("lmunkhdemberel@gmail.com"); //Утасны дугаар
   const [token, setToken] = useState(""); //Хэрэглэгчийн TOKEN
   const [userData, setUserData] = useState(""); //Хэрэглэгчийн мэдээлэл
   const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
   const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
-  const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийсэн эсэх
+  const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
+
+  const [loginErrorMsg, setLoginErrorMsg] = useState("");
 
   const navigation = useNavigation();
   const [expoPushToken, setExpoPushToken] = useState("");
@@ -51,7 +53,7 @@ export const MainStore = (props) => {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data; //expo-notification TOKEN авах
-    console.log(token);
+    // console.log(token);
 
     return token;
   }
@@ -91,7 +93,7 @@ export const MainStore = (props) => {
     //Notification дээр дарах
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log(response);
+        // console.log(response);
       });
 
     return () => {
@@ -161,38 +163,40 @@ export const MainStore = (props) => {
     try {
       await AsyncStorage.getItem("uuid").then(async (uuid_value) => {
         setUuid(uuid_value);
-        console.log("UUID VALUE ====>", uuid_value);
-        await AsyncStorage.getItem("user").then(async (user_value) => {
-          if (user_value != null) {
-            const JSONValue = JSON.parse(user_value);
-            console.log("USER VALUE ====>", JSONValue);
-            setUserData(JSONValue.user);
-            setToken(JSONValue.token);
-            setUserId(JSONValue.user?.id);
-            setCompanyId(JSONValue.user?.GMCompanyId);
-            // navigation.navigate("BiometricScreen");
-            await AsyncStorage.getItem("use_bio").then(async (bio_value) => {
-              console.log("BIO VALUE ====>", bio_value);
-              setIsUseBiometric(bio_value);
-              setIsLoading(false);
-              setIsLoginSuccess(true);
-              setIsLoggedIn(true);
-            });
+        // console.log("UUID VALUE ====>", uuid_value);
+        await AsyncStorage.getItem("use_bio").then(async (bio_value) => {
+          // console.log("BIO VALUE ====>", bio_value);
+          if (bio_value == "yes") {
+            setIsUseBiometric(true);
           } else {
-            setIsLoading(false);
-            setIsLoginSuccess(false);
-            setIsLoggedIn(false);
+            setIsUseBiometric(false);
           }
+          await AsyncStorage.getItem("user").then(async (user_value) => {
+            // console.log("user_value VALUE ====>", user_value);
+            if (user_value != null) {
+              const JSONValue = JSON.parse(user_value);
+              // console.log("USER VALUE ====>", JSONValue);
+              setToken(JSONValue.token);
+              setUserId(JSONValue.user?.id);
+              setCompanyId(JSONValue.user?.GMCompanyId);
+              setUserData(JSONValue.user);
+              setIsLoggedIn(true);
+              setIsLoading(false);
+            } else {
+              setIsLoading(false);
+              setIsLoggedIn(false);
+            }
+          });
         });
       });
     } catch (e) {
       // error reading value
-      console.log("checkUserData error======>", e);
+      // console.log("checkUserData error======>", e);
     }
   };
   const logout = () => {
     setIsLoggedIn(false);
-    setIsLoginSuccess(false);
+    setLoginErrorMsg("");
     AsyncStorage.removeItem("user");
   };
   return (
@@ -200,8 +204,6 @@ export const MainStore = (props) => {
       value={{
         isLoggedIn,
         setIsLoggedIn,
-        remember,
-        setRemember,
         email,
         setEmail,
         isLoading,
@@ -209,9 +211,8 @@ export const MainStore = (props) => {
         token,
         setToken,
         userData,
+        setUserData,
         last3Years,
-        isLoginSuccess,
-        setIsLoginSuccess,
         userId,
         setUserId,
         companyId,
@@ -220,6 +221,8 @@ export const MainStore = (props) => {
         logout,
         isUseBiometric,
         setIsUseBiometric,
+        loginErrorMsg,
+        setLoginErrorMsg,
       }}
     >
       {props.children}

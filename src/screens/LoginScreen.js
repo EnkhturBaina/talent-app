@@ -24,6 +24,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import * as LocalAuthentication from "expo-local-authentication";
 
 const LoginScreen = (props) => {
   const state = useContext(MainContext);
@@ -33,6 +34,9 @@ const LoginScreen = (props) => {
   const [visibleSnack, setVisibleSnack] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState("");
 
+  const [biometrics, setBiometrics] = useState(false);
+  const [grantAccess, setGrantAccess] = useState(false);
+
   const onToggleSnackBar = (msg) => {
     setVisibleSnack(!visibleSnack);
     setSnackBarMsg(msg);
@@ -41,15 +45,33 @@ const LoginScreen = (props) => {
   const onDismissSnackBar = () => setVisibleSnack(false);
 
   const checkHandle = () => {
-    state.setRemember(!state.remember);
+    state.setIsUseBiometric(!state.isUseBiometric);
   };
 
   const hideShowPassword = () => {
     setHidePassword(!hidePassword);
   };
 
+  const confirmBio = () => {
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      setBiometrics(compatible);
+      compatible
+        ? (async () => {
+            const auth = await LocalAuthentication.authenticateAsync();
+            if (auth.success) {
+              setGrantAccess(true);
+              state.setIsLoggedIn(true);
+            } else {
+              setGrantAccess(false);
+              // state.setIsLoggedIn(true);
+            }
+          })()
+        : null;
+    })();
+  };
+
   const resetUUID = async () => {
-    console.log("state.token", state.token);
     await axios({
       method: "post",
       url: `${SERVER_URL}/mobile/reset`,
@@ -64,9 +86,7 @@ const LoginScreen = (props) => {
       .then(async (response) => {
         console.log("resetUUID =====>", response.data);
       })
-      .catch(function (error) {
-        console.log("resetUUID error=====>", error);
-      });
+      .catch(function (error) {});
   };
   const login = async () => {
     if (state.emaal == "") {
@@ -75,8 +95,7 @@ const LoginScreen = (props) => {
       onToggleSnackBar("Нууц үг оруулна уу.");
     } else {
       var tempUUID = uuidv4();
-      console.log("tempUUID", tempUUID);
-      console.log("state.uuid", state.uuid);
+      state.setIsLoading(true);
       await axios({
         method: "post",
         url: `${SERVER_URL}/employee/mobile/login`,
@@ -88,13 +107,14 @@ const LoginScreen = (props) => {
         },
       })
         .then(async (response) => {
-          console.log("RES", response.data);
+          // console.log("RES", response.data);
           if (response.data?.Type == 0) {
-            state.setIsLoading(true);
             try {
+              state.setUserData(response.data.Extra?.user);
               state.setToken(response.data.Extra?.access_token);
               state.setUserId(response.data.Extra?.user?.id);
               state.setCompanyId(response.data.Extra?.user?.GMCompanyId);
+              // Login Хийсэн User -н Data -г Local Storage -д хадгалах
               await AsyncStorage.setItem(
                 "user",
                 JSON.stringify({
@@ -102,24 +122,39 @@ const LoginScreen = (props) => {
                   user: response.data.Extra?.user,
                 })
               ).then(async (value) => {
-                await AsyncStorage.setItem("uuid", tempUUID).then((value) => {
-                  console.log("THEN");
-                  state.setIsLoginSuccess(true);
-                  state.setIsLoading(false);
-                  // props.navigation.navigate("BiometricScreen");
-                });
+                // UUID -г Local Storage -д хадгалах
+                await AsyncStorage.setItem("uuid", tempUUID).then(
+                  async (value) => {
+                    if (state.isUseBiometric) {
+                      // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
+                      await AsyncStorage.setItem("use_bio", "yes").then(
+                        (value) => {
+                          state.setIsLoading(false);
+                          confirmBio();
+                          // props.navigation.navigate("BiometricScreen");
+                        }
+                      );
+                    } else {
+                      state.setIsLoggedIn(true);
+                      state.setIsLoading(false);
+                    }
+                  }
+                );
               });
             } catch (e) {
-              console.log("e====>", e);
+              // console.log("e====>", e);
             }
+            state.setLoginErrorMsg("");
           } else if (response.data?.Type == 1) {
-            onToggleSnackBar(response.data.Msg);
+            state.setLoginErrorMsg(response.data.Msg);
+            state.setIsLoading(false);
           } else if (response.data?.Type == 2) {
-            onToggleSnackBar(response.data.Msg);
+            state.setLoginErrorMsg(response.data.Msg);
+            state.setIsLoading(false);
           }
         })
         .catch(function (error) {
-          console.log("error", error);
+          // console.log("error", error);
         });
     }
   };
@@ -145,8 +180,18 @@ const LoginScreen = (props) => {
         <View style={styles.loginImageContainer}>
           <Image style={styles.loginImg} source={talent_logo} />
         </View>
-        <Button title="RESET UUID" onPress={() => resetUUID()} />
-        <Text>Credo1234@</Text>
+        {/* <Button title="RESET UUID" onPress={() => resetUUID()} /> */}
+        {state.loginErrorMsg != "" ? (
+          <Text
+            style={{
+              fontFamily: FONT_FAMILY_BOLD,
+              color: "red",
+              textAlign: "center",
+            }}
+          >
+            {state.loginErrorMsg}
+          </Text>
+        ) : null}
         <View style={styles.stackSection}>
           <TextInput
             label="И-мэйл"
@@ -224,7 +269,7 @@ const LoginScreen = (props) => {
             iconType="material-community"
             checkedIcon="checkbox-outline"
             uncheckedIcon="checkbox-blank-outline"
-            checked={state.remember}
+            checked={state.isUseBiometric}
             onPress={checkHandle}
             checkedColor={MAIN_COLOR}
             uncheckedColor={MAIN_COLOR}

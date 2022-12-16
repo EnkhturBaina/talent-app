@@ -38,10 +38,7 @@ const BiometricScreen = (props) => {
             console.log("auth", auth);
             if (auth.success) {
               setGrantAccess(true);
-              await AsyncStorage.setItem("use_bio", "yes").then((value) => {
-                state.setIsUseBiometric("yes");
-                state.setIsLoggedIn(true);
-              });
+              state.setIsLoggedIn(true);
             } else {
               setGrantAccess(false);
               state.setIsLoggedIn(true);

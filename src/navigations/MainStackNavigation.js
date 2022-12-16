@@ -23,7 +23,7 @@ const LoginStackNavigator = (props) => {
   const state = useContext(MainContext);
   return (
     <Stack.Navigator
-      initialRouteName={state.isloginSuccess ? "BiometricScreen" : "LoginTab"}
+      initialRouteName="LoginTab"
       screenOptions={{
         headerStyle: {
           shadowColor: "transparent", // this covers iOS
