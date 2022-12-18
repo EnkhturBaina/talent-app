@@ -9,7 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 const { StatusBarManager } = NativeModules;
 import come from "../../assets/homeScreen/come.png";
 import out from "../../assets/homeScreen/out.png";
@@ -30,8 +30,11 @@ import {
   MAIN_COLOR_RED,
 } from "../constant";
 import HeaderUser from "../components/HeaderUser";
+import * as Location from "expo-location";
 
 const HomeScreen = (props) => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
   const menu = [
     { img: Attendance, label: "Ирц", nav: "AttendanceScreen" },
     { img: request, label: "Хүсэлт", nav: "RequestListScreen" },
@@ -41,6 +44,27 @@ const HomeScreen = (props) => {
     { img: help, label: "Тусламж", nav: "" },
   ];
   const general_style = require("../style");
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let text = "Waiting..";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
+
   return (
     <SafeAreaView
       style={{
@@ -97,6 +121,7 @@ const HomeScreen = (props) => {
               />
             </View>
           </View>
+          <Text>{text}</Text>
           <View style={styles.menuContainer}>
             {menu.map((el, index) => {
               return (
