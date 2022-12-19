@@ -86,7 +86,9 @@ const LoginScreen = (props) => {
       .then(async (response) => {
         console.log("resetUUID =====>", response.data);
       })
-      .catch(function (error) {});
+      .catch(function (error) {
+        console.log("resetUUID error=====>", error);
+      });
   };
   const login = async () => {
     if (state.emaal == "") {

@@ -88,7 +88,11 @@ const ProfileScreen = (props) => {
             <TouchableOpacity
               style={styles.profileCard}
               onPress={() =>
-                el.action ? el.action("AAA") : props.navigation.navigate(el.nav)
+                el.action
+                  ? el.action("AAA")
+                  : el.nav
+                  ? props.navigation.navigate(el.nav)
+                  : null
               }
               key={index}
             >
@@ -134,6 +138,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     borderRadius: 12,
     marginHorizontal: 20,
+    backgroundColor: "#fff",
   },
   profileCard: {
     height: 60,
