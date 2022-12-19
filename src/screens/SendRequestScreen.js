@@ -7,6 +7,8 @@ import {
   Platform,
   TouchableOpacity,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon, CheckBox, Button } from "@rneui/themed";
@@ -22,6 +24,7 @@ import {
 import MainContext from "../contexts/MainContext";
 import axios from "axios";
 const { StatusBarManager } = NativeModules;
+import Loader from "../components/Loader";
 
 const SendRequestScreen = (props) => {
   const state = useContext(MainContext);
@@ -30,6 +33,7 @@ const SendRequestScreen = (props) => {
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [fieldName, setFieldName] = useState(""); //Аль утгыг OBJECT -с update хийх
   const [absenceTypes, setAbsenceTypes] = useState(""); //Хүсэлтийн төрөл
+  const [isLoadingRequest, setIsLoadingRequest] = useState(true);
 
   const [requestData, setRequestData] = useState({
     requestType: "", //Хүсэлтийн төрөл
@@ -57,6 +61,7 @@ const SendRequestScreen = (props) => {
           console.log("WARNING", response.data.Msg);
         } else if (response.data?.Type == 2) {
         }
+        setIsLoadingRequest(false);
       })
       .catch(function (error) {
         console.log("error", error);
@@ -76,79 +81,108 @@ const SendRequestScreen = (props) => {
     setUselessParam(!uselessParam);
   };
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
-      }}
-    >
-      <View style={styles.touchableSelectContainer}>
-        <Text>Хүсэлтийн төрөл сонгох</Text>
-        <TouchableOpacity
-          style={styles.touchableSelect}
-          onPress={() =>
-            setLookupData(absenceTypes.types, "Name", "requestType")
-          }
-        >
-          <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {requestData.requestType.Name}
-          </Text>
-          <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.touchableSelectContainer}>
-        <Text>Эхлэх огноо</Text>
-        <TouchableOpacity
-          style={styles.touchableSelect}
-          onPress={() => setLookupData(state.last3Years, "name", "startDate")}
-        >
-          <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {/* {requestData.name} */}
-          </Text>
-          <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.touchableSelectContainer}>
-        <Text>Дуусах огноо</Text>
-        <TouchableOpacity
-          style={styles.touchableSelect}
-          onPress={() => setLookupData(state.last3Years, "name", "endDate")}
-        >
-          <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {/* {requestData.name} */}
-          </Text>
-          <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.touchableSelectContainer}>
-        <Text>Тайлбар</Text>
-        <TextInput
-          multiline={true}
-          numberOfLines={4}
-          onChangeText={(text) =>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        }}
+      >
+        {isLoadingRequest ? (
+          <Loader />
+        ) : (
+          <>
+            <View style={styles.touchableSelectContainer}>
+              <Text>Хүсэлтийн төрөл сонгох</Text>
+              <TouchableOpacity
+                style={styles.touchableSelect}
+                onPress={() =>
+                  setLookupData(absenceTypes.types, "Name", "requestType")
+                }
+              >
+                <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                  {requestData.requestType.Name}
+                </Text>
+                <Icon
+                  name="keyboard-arrow-down"
+                  type="material-icons"
+                  size={30}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.touchableSelectContainer}>
+              <Text>Эхлэх огноо</Text>
+              <TouchableOpacity
+                style={styles.touchableSelect}
+                onPress={() =>
+                  setLookupData(state.last3Years, "name", "startDate")
+                }
+              >
+                <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                  {/* {requestData.name} */}
+                </Text>
+                <Icon
+                  name="keyboard-arrow-down"
+                  type="material-icons"
+                  size={30}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.touchableSelectContainer}>
+              <Text>Дуусах огноо</Text>
+              <TouchableOpacity
+                style={styles.touchableSelect}
+                onPress={() =>
+                  setLookupData(state.last3Years, "name", "endDate")
+                }
+              >
+                <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                  {/* {requestData.name} */}
+                </Text>
+                <Icon
+                  name="keyboard-arrow-down"
+                  type="material-icons"
+                  size={30}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.touchableSelectContainer}>
+              <Text>Тайлбар</Text>
+              <TextInput
+                multiline={true}
+                numberOfLines={4}
+                onChangeText={(text) =>
+                  setRequestData((prevState) => ({
+                    ...prevState,
+                    description: text,
+                  }))
+                }
+                value={requestData.description}
+                style={styles.description}
+                returnKeyType="done"
+                onBlur={() => {
+                  Keyboard.dismiss();
+                }}
+              />
+            </View>
+          </>
+        )}
+
+        <BottomSheet
+          bodyText={data}
+          dragDown={true}
+          backClick={true}
+          displayName={displayName}
+          handle={uselessParam}
+          action={(e) =>
             setRequestData((prevState) => ({
               ...prevState,
-              description: text,
+              [fieldName]: e,
             }))
           }
-          value={requestData.description}
-          style={styles.description}
         />
-      </View>
-      <BottomSheet
-        bodyText={data}
-        dragDown={true}
-        backClick={true}
-        displayName={displayName}
-        handle={uselessParam}
-        action={(e) =>
-          setRequestData((prevState) => ({
-            ...prevState,
-            [fieldName]: e,
-          }))
-        }
-      />
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -181,5 +215,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginTop: 10,
     borderRadius: MAIN_BORDER_RADIUS,
+    padding: 10,
   },
 });
