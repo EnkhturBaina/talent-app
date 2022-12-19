@@ -9,7 +9,6 @@ const Loader = () => {
       style={{
         flex: 1,
         alignItems: "center",
-        backgroundColor: "#fff",
         justifyContent: "center",
       }}
     >

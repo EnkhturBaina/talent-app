@@ -6,7 +6,8 @@ import {
   NativeModules,
   Platform,
   TouchableOpacity,
-  Touchable,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon, CheckBox, Button } from "@rneui/themed";
@@ -18,29 +19,24 @@ import {
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
   MAIN_COLOR_GRAY,
+  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 import Accordion from "react-native-collapsible/Accordion";
+import axios from "axios";
+import Loader from "../components/Loader";
 
 const AttendanceScreen = (props) => {
   const state = useContext(MainContext);
+  var date = new Date();
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
+  const [attendanceList, setAttendanceList] = useState(""); //Ажилтны ирцийн мэдээлэл
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [activeSections, setActiveSections] = useState([]);
-
-  const SECTIONS = [
-    {
-      title: "First",
-      content: "Lorem ipsum...",
-    },
-    {
-      title: "Second",
-      content: "Lorem ipsum...",
-    },
-  ];
+  const [loadingAttendanceList, setLoadingAttendanceList] = useState(true);
 
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
@@ -48,12 +44,42 @@ const AttendanceScreen = (props) => {
     setUselessParam(!uselessParam);
   };
 
-  useEffect(() => {}, []);
+  const getEmployeeAttendanceList = async () => {
+    setLoadingAttendanceList(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/attendance/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: state.userId,
+        StartRange: selectedDate.id + "-01",
+        EndRange:
+          selectedDate.id +
+          "-" +
+          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      },
+    })
+      .then((response) => {
+        console.log("getEmployee AttendanceList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setAttendanceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingAttendanceList(false);
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      });
+  };
 
   const renderSectionTitle = (section) => {
     return (
       <View style={styles.content}>
-        <Text>{section.content}1</Text>
+        <Text>1</Text>
       </View>
     );
   };
@@ -61,11 +87,11 @@ const AttendanceScreen = (props) => {
   const renderHeader = (section) => {
     return (
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Баа, 29/01/2021</Text>
-        <Text style={styles.headerTitle}>8 цаг 30 мин</Text>
+        <Text style={styles.headerTitle}>{section.Date}</Text>
+        <Text style={styles.headerTitle}>{section.WorkingHours}</Text>
         <Text style={styles.headerTitle}>0 цаг 30 мин</Text>
-        <Text style={[styles.headerTitle, { color: MAIN_COLOR }]}>
-          Хүлээгдэж буй
+        <Text style={[styles.headerTitle, { color: section.state?.Color }]}>
+          {section.state?.Name}
         </Text>
       </View>
     );
@@ -74,7 +100,7 @@ const AttendanceScreen = (props) => {
   const renderContent = (section) => {
     return (
       <View style={styles.content}>
-        <Text>{section.content}</Text>
+        <Text>{section.titleMN}</Text>
       </View>
     );
   };
@@ -82,6 +108,10 @@ const AttendanceScreen = (props) => {
   const updateSections = (activeSections) => {
     setActiveSections(activeSections);
   };
+
+  useEffect(() => {
+    getEmployeeAttendanceList();
+  }, [selectedDate]);
 
   return (
     <SafeAreaView
@@ -103,20 +133,34 @@ const AttendanceScreen = (props) => {
         </TouchableOpacity>
       </View>
       <View style={styles.headerTitleContainer}>
-        <Text style={styles.headerTitle}>Огноо</Text>
-        <Text style={styles.headerTitle}>Ажилласан цаг</Text>
-        <Text style={styles.headerTitle}>Илүү цаг/Хоцролт</Text>
-        <Text style={styles.headerTitle}>Төлөв</Text>
+        <Text style={styles.headerTitleBold}>Огноо</Text>
+        <Text style={styles.headerTitleBold}>Ажилласан цаг</Text>
+        <Text style={styles.headerTitleBold}>Илүү цаг/Хоцролт</Text>
+        <Text style={styles.headerTitleBold}>Төлөв</Text>
       </View>
-      <Accordion
-        sections={SECTIONS}
-        activeSections={activeSections}
-        // renderSectionTitle={renderSectionTitle}
-        renderHeader={renderHeader}
-        renderContent={renderContent}
-        onChange={updateSections}
-        underlayColor="transparent"
-      />
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: 60,
+        }}
+      >
+        {loadingAttendanceList ? (
+          <Loader />
+        ) : !loadingAttendanceList && attendanceList == "" ? (
+          <Text style={styles.emptyText}>
+            Ажилтны ирцийн мэдээлэл олдсонгүй
+          </Text>
+        ) : (
+          <Accordion
+            sections={attendanceList}
+            activeSections={activeSections}
+            // renderSectionTitle={renderSectionTitle}
+            renderHeader={renderHeader}
+            renderContent={renderContent}
+            onChange={updateSections}
+            underlayColor="transparent"
+          />
+        )}
+      </ScrollView>
       <BottomSheet
         bodyText={data}
         dragDown={true}
@@ -165,6 +209,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 12,
   },
+  headerTitleBold: {
+    width: "25%",
+    fontFamily: FONT_FAMILY_BOLD,
+    textAlign: "center",
+    fontSize: 12,
+  },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -175,5 +225,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 10,
     marginHorizontal: 10,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontFamily: FONT_FAMILY_BOLD,
+    textAlign: "center",
+    marginTop: 10,
   },
 });

@@ -91,8 +91,11 @@ const LoginScreen = (props) => {
       });
   };
   const login = async () => {
-    if (state.emaal == "") {
+    const regex_email = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+    if (state.email == "") {
       onToggleSnackBar("И-мэйл хаягаа оруулна уу.");
+    } else if (!regex_email.test(state.email)) {
+      onToggleSnackBar("И-мэйл хаягаа зөв оруулна уу.");
     } else if (password == "") {
       onToggleSnackBar("Нууц үг оруулна уу.");
     } else {
@@ -104,12 +107,12 @@ const LoginScreen = (props) => {
         data: {
           email: state.email,
           password: password,
-          // MobileUUID: state.uuid ? state.uuid : tempUUID,
-          MobileUUID: "812206e1-7a92-4f7d-98b4-10e06cb5dfee",
+          MobileUUID: state.uuid ? state.uuid : tempUUID,
+          // MobileUUID: "812206e1-7a92-4f7d-98b4-10e06cb5dfee",
         },
       })
         .then(async (response) => {
-          // console.log("RES", response.data);
+          console.log("RES", response.data);
           if (response.data?.Type == 0) {
             try {
               state.setUserData(response.data.Extra?.user);
@@ -202,7 +205,6 @@ const LoginScreen = (props) => {
             value={state.email}
             returnKeyType="done"
             keyboardType="email-address"
-            maxLength={8}
             onChangeText={(e) => {
               state.setEmail(e);
             }}

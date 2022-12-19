@@ -17,8 +17,10 @@ import {
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
+import axios from "axios";
 const { StatusBarManager } = NativeModules;
 
 const SendRequestScreen = (props) => {
@@ -27,6 +29,7 @@ const SendRequestScreen = (props) => {
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [fieldName, setFieldName] = useState(""); //Аль утгыг OBJECT -с update хийх
+  const [absenceTypes, setAbsenceTypes] = useState(""); //Хүсэлтийн төрөл
 
   const [requestData, setRequestData] = useState({
     requestType: "", //Хүсэлтийн төрөл
@@ -34,7 +37,37 @@ const SendRequestScreen = (props) => {
     endDate: "",
     description: "",
   });
-  useEffect(() => {}, []);
+
+  const getAbsenceTypes = async () => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/absence/type/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMCompanyId: state.companyId,
+      },
+    })
+      .then((response) => {
+        // console.log("get AbsenceTypes======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setAbsenceTypes(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      });
+  };
+  useEffect(() => {
+    getAbsenceTypes();
+  }, []);
+  useEffect(() => {
+    requestData && console.log("requestData", requestData);
+  }, [requestData]);
 
   const setLookupData = (data, display, field) => {
     setData(data); //Lookup -д харагдах дата
@@ -42,7 +75,6 @@ const SendRequestScreen = (props) => {
     setFieldName(field);
     setUselessParam(!uselessParam);
   };
-
   return (
     <SafeAreaView
       style={{
@@ -50,23 +82,25 @@ const SendRequestScreen = (props) => {
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
       }}
     >
-      <View>
+      <View style={styles.touchableSelectContainer}>
         <Text>Хүсэлтийн төрөл сонгох</Text>
         <TouchableOpacity
           style={styles.touchableSelect}
-          onPress={() => setLookupData(state.last3Years, "name", "requestType")}
+          onPress={() =>
+            setLookupData(absenceTypes.types, "Name", "requestType")
+          }
         >
           <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {/* {requestData.name} */}
+            {requestData.requestType.Name}
           </Text>
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <View>
+      <View style={styles.touchableSelectContainer}>
         <Text>Эхлэх огноо</Text>
         <TouchableOpacity
           style={styles.touchableSelect}
-          onPress={() => setLookupData(state.last3Years, "name", "requestType")}
+          onPress={() => setLookupData(state.last3Years, "name", "startDate")}
         >
           <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
             {/* {requestData.name} */}
@@ -74,11 +108,11 @@ const SendRequestScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <View>
+      <View style={styles.touchableSelectContainer}>
         <Text>Дуусах огноо</Text>
         <TouchableOpacity
           style={styles.touchableSelect}
-          onPress={() => setLookupData(state.last3Years, "name", "requestType")}
+          onPress={() => setLookupData(state.last3Years, "name", "endDate")}
         >
           <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
             {/* {requestData.name} */}
@@ -86,7 +120,7 @@ const SendRequestScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <View>
+      <View style={styles.touchableSelectContainer}>
         <Text>Тайлбар</Text>
         <TextInput
           multiline={true}
@@ -98,7 +132,7 @@ const SendRequestScreen = (props) => {
             }))
           }
           value={requestData.description}
-          style={{ height: 200, backgroundColor: "#fff" }}
+          style={styles.description}
         />
       </View>
       <BottomSheet
@@ -107,7 +141,12 @@ const SendRequestScreen = (props) => {
         backClick={true}
         displayName={displayName}
         handle={uselessParam}
-        action={(e) => setSelectedDate(e)}
+        action={(e) =>
+          setRequestData((prevState) => ({
+            ...prevState,
+            [fieldName]: e,
+          }))
+        }
       />
     </SafeAreaView>
   );
@@ -116,6 +155,12 @@ const SendRequestScreen = (props) => {
 export default SendRequestScreen;
 
 const styles = StyleSheet.create({
+  touchableSelectContainer: {
+    width: "90%",
+    marginRight: "auto",
+    marginLeft: "auto",
+    marginTop: 10,
+  },
   touchableSelect: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -128,5 +173,13 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 5,
     alignSelf: "flex-start",
+    width: "100%",
+    marginTop: 10,
+  },
+  description: {
+    height: 200,
+    backgroundColor: "#fff",
+    marginTop: 10,
+    borderRadius: MAIN_BORDER_RADIUS,
   },
 });

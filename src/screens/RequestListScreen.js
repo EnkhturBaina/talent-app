@@ -17,17 +17,22 @@ import {
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
+import axios from "axios";
+import Loader from "../components/Loader";
 
 const RequestListScreen = (props) => {
   const state = useContext(MainContext);
-  const general_style = require("../style");
+  var date = new Date();
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
+  const [absenceList, setAbsenceList] = useState(""); //Хүсэлтийн жагсаалт
+  const [loadingAbsences, setLoadingAbsences] = useState(true);
 
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
@@ -35,7 +40,40 @@ const RequestListScreen = (props) => {
     setUselessParam(!uselessParam);
   };
 
-  useEffect(() => {}, []);
+  const getAbsences = async () => {
+    setLoadingAbsences(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/absence/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: state.userId,
+        StartRange: selectedDate.id + "-01",
+        EndRange:
+          selectedDate.id +
+          "-" +
+          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      },
+    })
+      .then((response) => {
+        // console.log("get Absences======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setAbsenceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingAbsences(false);
+      })
+      .catch(function (error) {
+        console.log("error", error);
+      });
+  };
+  useEffect(() => {
+    getAbsences();
+  }, [selectedDate]);
 
   return (
     <SafeAreaView
@@ -70,25 +108,45 @@ const RequestListScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
-        <View style={styles.requestContainer}>
-          <View style={styles.stack1}>
-            <Text style={general_style.generalTextBold}>
-              Ирц нөхөж бүртгүүлэх
-            </Text>
-            <View>
-              <Text style={[general_style.generalText, { fontSize: 12 }]}>
-                Эхлэх: 2022-12-09 18:00
-              </Text>
-              <Text style={[general_style.generalText, { fontSize: 12 }]}>
-                Дуусах: 2022-12-09 19:00
-              </Text>
-            </View>
-          </View>
-          <View style={styles.stack2}>
-            <Text>Өглөөний ирцээ бүртгүүлэхээ мартсан байна.</Text>
-          </View>
-        </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} bounces={false}>
+        {loadingAbsences ? (
+          <Loader />
+        ) : !loadingAbsences && absenceList == "" ? (
+          <Text style={styles.emptyText}>
+            Ажилтны хүсэлтийн мэдээлэл олдсонгүй
+          </Text>
+        ) : (
+          <>
+            {absenceList.map((el, index) => {
+              return (
+                <View
+                  style={[
+                    styles.requestContainer,
+                    {
+                      borderColor: el.absence_type?.category?.CalendarColor,
+                    },
+                  ]}
+                  key={index}
+                >
+                  <View style={styles.stack1}>
+                    <Text style={styles.title} numberOfLines={2}>
+                      {el.TypeTitle}
+                    </Text>
+                    <View>
+                      <Text style={styles.comment}>Эхлэх: {el.FromDate}</Text>
+                      <Text style={styles.comment}>Дуусах: {el.ToDate}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.stack2}>
+                    <Text numberOfLines={4} style={styles.comment}>
+                      {el.Comment}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        )}
       </ScrollView>
 
       <BottomSheet
@@ -128,12 +186,36 @@ const styles = StyleSheet.create({
   requestContainer: {
     flexDirection: "row",
     marginHorizontal: 20,
-    borderLeftColor: MAIN_COLOR,
+    flex: 1,
+    height: 80,
+    marginTop: 10,
+    alignItems: "center",
     borderLeftWidth: 10,
-    borderRightColor: MAIN_COLOR,
     borderRightWidth: 10,
   },
   stack1: {
-    backgroundColor: "gray",
+    padding: 5,
+    backgroundColor: "#c2c2c2",
+    width: "50%",
+    height: "100%",
+  },
+  stack2: {
+    padding: 5,
+    width: "50%",
+    backgroundColor: "#d9d9d9",
+    height: "100%",
+  },
+  title: {
+    fontFamily: FONT_FAMILY_BOLD,
+    fontSize: 14,
+  },
+  comment: {
+    fontFamily: FONT_FAMILY_LIGHT,
+    fontSize: 12,
+  },
+  emptyText: {
+    fontFamily: FONT_FAMILY_BOLD,
+    textAlign: "center",
+    marginTop: 10,
   },
 });
