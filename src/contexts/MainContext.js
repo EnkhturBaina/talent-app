@@ -30,6 +30,7 @@ export const MainStore = (props) => {
   const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
   const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
   const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
+  const [loginByBiometric, setLoginByBiometric] = useState(false); //Biometric тохиргоогоор нэвтрэх
 
   const [loginErrorMsg, setLoginErrorMsg] = useState("");
 
@@ -168,25 +169,12 @@ export const MainStore = (props) => {
           // console.log("BIO VALUE ====>", bio_value);
           if (bio_value == "yes") {
             setIsUseBiometric(true);
+            setLoginByBiometric(true);
           } else {
             setIsUseBiometric(false);
+            setLoginByBiometric(false);
           }
-          await AsyncStorage.getItem("user").then(async (user_value) => {
-            // console.log("user_value VALUE ====>", user_value);
-            if (user_value != null) {
-              const JSONValue = JSON.parse(user_value);
-              // console.log("USER VALUE ====>", JSONValue);
-              setToken(JSONValue.token);
-              setUserId(JSONValue.user?.id);
-              setCompanyId(JSONValue.user?.GMCompanyId);
-              setUserData(JSONValue.user);
-              setIsLoggedIn(true);
-              setIsLoading(false);
-            } else {
-              setIsLoading(false);
-              setIsLoggedIn(false);
-            }
-          });
+          setIsLoading(false);
         });
       });
     } catch (e) {
@@ -194,10 +182,33 @@ export const MainStore = (props) => {
       // console.log("checkUserData error======>", e);
     }
   };
+
+  //Апп ажиллахад утасны local storage -с зөвхөн хэрэглэгчийн мэдээлэл авах
+  const getUserDataLocalStorage = async () => {
+    setIsLoading(true);
+    await AsyncStorage.getItem("user").then(async (user_value) => {
+      // console.log("user_value VALUE ====>", user_value);
+      if (user_value != null) {
+        const JSONValue = JSON.parse(user_value);
+        // console.log("USER VALUE ====>", JSONValue);
+        setToken(JSONValue.token);
+        setUserId(JSONValue.user?.id);
+        setCompanyId(JSONValue.user?.GMCompanyId);
+        setUserData(JSONValue.user);
+        setIsLoggedIn(true);
+        setIsLoading(false);
+      } else {
+        setIsLoggedIn(false);
+        setIsLoading(false);
+      }
+    });
+  };
   const logout = () => {
     setIsLoggedIn(false);
     setLoginErrorMsg("");
-    AsyncStorage.removeItem("user");
+    // AsyncStorage.removeItem("user");
+    // AsyncStorage.removeItem("use_bio");
+    setLoginByBiometric(false);
   };
   return (
     <MainContext.Provider
@@ -223,6 +234,8 @@ export const MainStore = (props) => {
         setIsUseBiometric,
         loginErrorMsg,
         setLoginErrorMsg,
+        loginByBiometric,
+        getUserDataLocalStorage,
       }}
     >
       {props.children}

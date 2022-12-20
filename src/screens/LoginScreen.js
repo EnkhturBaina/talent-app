@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Icon, CheckBox, Button } from "@rneui/themed";
 import MainContext from "../contexts/MainContext";
 import CustomSnackbar from "../components/CustomSnackbar";
@@ -55,19 +55,29 @@ const LoginScreen = (props) => {
   const confirmBio = () => {
     (async () => {
       const compatible = await LocalAuthentication.hasHardwareAsync();
+      // console.log("compatible", compatible);
       setBiometrics(compatible);
-      compatible
-        ? (async () => {
-            const auth = await LocalAuthentication.authenticateAsync();
-            if (auth.success) {
-              setGrantAccess(true);
-              state.setIsLoggedIn(true);
-            } else {
-              setGrantAccess(false);
-              // state.setIsLoggedIn(true);
-            }
-          })()
-        : null;
+      LocalAuthentication.isEnrolledAsync().then(
+        (hasFingerprintOrFacialData) => {
+          if (!hasFingerprintOrFacialData) {
+            state.setIsLoggedIn(true);
+            state.setIsLoading(false);
+          } else {
+            compatible
+              ? (async () => {
+                  const auth = await LocalAuthentication.authenticateAsync();
+                  // console.log("auth", auth);
+                  if (auth.success) {
+                    setGrantAccess(true);
+                    state.getUserDataLocalStorage();
+                  } else {
+                    setGrantAccess(false);
+                  }
+                })()
+              : null;
+          }
+        }
+      );
     })();
   };
 
@@ -112,7 +122,7 @@ const LoginScreen = (props) => {
         },
       })
         .then(async (response) => {
-          console.log("RES", response.data);
+          // console.log("RES", response.data);
           if (response.data?.Type == 0) {
             try {
               state.setUserData(response.data.Extra?.user);
@@ -128,23 +138,29 @@ const LoginScreen = (props) => {
                 })
               ).then(async (value) => {
                 // UUID -г Local Storage -д хадгалах
-                await AsyncStorage.setItem("uuid", tempUUID).then(
-                  async (value) => {
-                    if (state.isUseBiometric) {
-                      // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
-                      await AsyncStorage.setItem("use_bio", "yes").then(
-                        (value) => {
-                          state.setIsLoading(false);
-                          confirmBio();
-                          // props.navigation.navigate("BiometricScreen");
-                        }
-                      );
-                    } else {
-                      state.setIsLoggedIn(true);
-                      state.setIsLoading(false);
-                    }
+                await AsyncStorage.setItem(
+                  "uuid",
+                  state.uuid ? state.uuid : tempUUID
+                ).then(async (value) => {
+                  if (state.isUseBiometric) {
+                    // console.log("BIO");
+                    // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
+                    await AsyncStorage.setItem("use_bio", "yes").then(
+                      (value) => {
+                        confirmBio();
+                        // props.navigation.navigate("BiometricScreen");
+                      }
+                    );
+                  } else {
+                    // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
+                    await AsyncStorage.setItem("use_bio", "no").then(
+                      (value) => {
+                        state.setIsLoggedIn(true);
+                        state.setIsLoading(false);
+                      }
+                    );
                   }
-                );
+                });
               });
             } catch (e) {
               // console.log("e====>", e);
@@ -163,6 +179,10 @@ const LoginScreen = (props) => {
         });
     }
   };
+
+  useEffect(() => {
+    state.loginByBiometric && confirmBio();
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -202,6 +222,7 @@ const LoginScreen = (props) => {
             label="И-мэйл"
             mode="outlined"
             style={styles.generalInput}
+            dense={true}
             value={state.email}
             returnKeyType="done"
             keyboardType="email-address"
@@ -232,6 +253,7 @@ const LoginScreen = (props) => {
               label="Нууц үг"
               mode="outlined"
               style={styles.generalInput}
+              dense={true}
               value={password}
               returnKeyType="done"
               secureTextEntry={hidePassword}
@@ -252,11 +274,7 @@ const LoginScreen = (props) => {
               style={styles.imageStyle}
               onPress={() => hideShowPassword()}
             >
-              <Icon
-                name={hidePassword ? "eye" : "eye-closed"}
-                type="octicon"
-                color={MAIN_COLOR_GRAY}
-              />
+              <Icon name={hidePassword ? "eye" : "eye-closed"} type="octicon" />
             </TouchableOpacity>
           </View>
         </View>
@@ -340,9 +358,10 @@ const styles = StyleSheet.create({
   },
   generalInput: {
     width: "80%",
-    height: 40,
+    // height: 40,
     backgroundColor: "#fff",
     marginTop: 10,
+    padding: 0,
   },
   searchIcon: {
     resizeMode: "contain",

@@ -94,7 +94,7 @@ const EmployeesScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
-        marginBottom: Dimensions.get("window").height - 370,
+        marginBottom: Dimensions.get("window").height * 0.58,
       }}
     >
       <HeaderUser />
@@ -139,12 +139,13 @@ const EmployeesScreen = (props) => {
             style={styles.contactsContainer}
             indexContainerStyle={{
               width: 30,
+              height: 300,
               // position: "absolute",
               // right: -20,
             }}
             indexLetterContainerStyle={{
               width: "100%",
-              height: 20,
+              height: 30,
               marginTop: 5,
             }}
             indexLetterStyle={{
