@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY_BOLD,
     paddingVertical: 10,
     borderRadius: 20,
+    overflow: "hidden",
     color: "#fff",
     width: 120,
     textAlign: "center",
