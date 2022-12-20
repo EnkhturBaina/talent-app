@@ -15,6 +15,7 @@ import { Icon } from "@rneui/base";
 import RequestListScreen from "../screens/RequestListScreen";
 import BiometricScreen from "../screens/BiometricScreen";
 import SendRequestScreen from "../screens/SendRequestScreen";
+import MapScreen from "../screens/MapScreen";
 // import { Icon } from "@rneui/base";
 
 const Stack = createStackNavigator();
@@ -213,6 +214,17 @@ const HomeScreenStackNavigator = (props) => {
               <Text style={styles.headerLeftText}>Хүсэлт илгээх</Text>
             </TouchableOpacity>
           ),
+        }}
+      />
+      <Stack.Screen
+        name="MapScreen"
+        component={MapScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {
+            fontFamily: FONT_FAMILY_BOLD,
+          },
         }}
       />
     </Stack.Navigator>

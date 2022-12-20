@@ -89,8 +89,15 @@ const AttendanceScreen = (props) => {
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>{section.Date}</Text>
         <Text style={styles.headerTitle}>{section.WorkingHours}</Text>
-        <Text style={styles.headerTitle}>0 цаг 30 мин</Text>
-        <Text style={[styles.headerTitle, { color: section.state?.Color }]}>
+        <Text style={styles.headerTitle}>
+          {section.Overtime} / {section.DeficitTime}
+        </Text>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: section.state?.Color, fontFamily: FONT_FAMILY_BOLD },
+          ]}
+        >
           {section.state?.Name}
         </Text>
       </View>
@@ -202,6 +209,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 10,
     marginHorizontal: 10,
+    alignItems: "center",
   },
   headerTitle: {
     width: "25%",
@@ -221,11 +229,20 @@ const styles = StyleSheet.create({
     borderRadius: MAIN_BORDER_RADIUS,
     borderWidth: 1,
     borderColor: MAIN_COLOR_GRAY,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 1,
     paddingHorizontal: 5,
     paddingVertical: 10,
     marginTop: 10,
     marginHorizontal: 10,
     alignItems: "center",
+    backgroundColor: "#fff",
   },
   emptyText: {
     fontFamily: FONT_FAMILY_BOLD,

@@ -190,7 +190,7 @@ export const MainStore = (props) => {
       // console.log("user_value VALUE ====>", user_value);
       if (user_value != null) {
         const JSONValue = JSON.parse(user_value);
-        // console.log("USER VALUE ====>", JSONValue);
+        console.log("USER VALUE ====>", JSONValue);
         setToken(JSONValue.token);
         setUserId(JSONValue.user?.id);
         setCompanyId(JSONValue.user?.GMCompanyId);
