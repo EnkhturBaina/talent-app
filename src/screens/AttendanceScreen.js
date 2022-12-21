@@ -7,10 +7,9 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
-import { Icon, CheckBox, Button } from "@rneui/themed";
+import { Icon } from "@rneui/themed";
 import HeaderUser from "../components/HeaderUser";
 import BottomSheet from "../components/BottomSheet";
 import {

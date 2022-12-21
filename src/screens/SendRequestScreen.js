@@ -11,8 +11,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
-import { Icon, CheckBox, Button } from "@rneui/themed";
-import HeaderUser from "../components/HeaderUser";
+import { Icon } from "@rneui/themed";
 import BottomSheet from "../components/BottomSheet";
 import {
   FONT_FAMILY_BOLD,
