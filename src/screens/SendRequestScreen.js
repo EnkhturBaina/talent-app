@@ -19,6 +19,7 @@ import {
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  MAIN_COLOR_GRAY,
   SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
@@ -64,7 +65,12 @@ const SendRequestScreen = (props) => {
         setIsLoadingRequest(false);
       })
       .catch(function (error) {
-        console.log("error", error);
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
       });
   };
   useEffect(() => {
@@ -86,6 +92,7 @@ const SendRequestScreen = (props) => {
         style={{
           flex: 1,
           paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+          backgroundColor: "#fff",
         }}
       >
         {isLoadingRequest ? (
@@ -93,7 +100,7 @@ const SendRequestScreen = (props) => {
         ) : (
           <>
             <View style={styles.touchableSelectContainer}>
-              <Text>Хүсэлтийн төрөл сонгох</Text>
+              <Text style={styles.title}>Хүсэлтийн төрөл сонгох</Text>
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
@@ -111,7 +118,7 @@ const SendRequestScreen = (props) => {
               </TouchableOpacity>
             </View>
             <View style={styles.touchableSelectContainer}>
-              <Text>Эхлэх огноо</Text>
+              <Text style={styles.title}>Эхлэх огноо</Text>
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
@@ -129,7 +136,7 @@ const SendRequestScreen = (props) => {
               </TouchableOpacity>
             </View>
             <View style={styles.touchableSelectContainer}>
-              <Text>Дуусах огноо</Text>
+              <Text style={styles.title}>Дуусах огноо</Text>
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
@@ -147,7 +154,7 @@ const SendRequestScreen = (props) => {
               </TouchableOpacity>
             </View>
             <View style={styles.touchableSelectContainer}>
-              <Text>Тайлбар</Text>
+              <Text style={styles.title}>Тайлбар</Text>
               <TextInput
                 multiline={true}
                 numberOfLines={4}
@@ -212,9 +219,14 @@ const styles = StyleSheet.create({
   },
   description: {
     height: 200,
-    backgroundColor: "#fff",
+    backgroundColor: MAIN_COLOR_GRAY,
     marginTop: 10,
     borderRadius: MAIN_BORDER_RADIUS,
     padding: 10,
+    borderWidth: 1,
+    borderColor: MAIN_COLOR,
+  },
+  title: {
+    fontFamily: FONT_FAMILY_LIGHT,
   },
 });

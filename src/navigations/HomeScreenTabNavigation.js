@@ -13,8 +13,6 @@ import {
 import MainContext from "../contexts/MainContext";
 import { MAIN_COLOR } from "../constant";
 import SplashScreen from "../screens/SplashScreen";
-import BiometricScreen from "../screens/BiometricScreen";
-import LoginScreen from "../screens/LoginScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeScreenTabNavigation = () => {
@@ -23,11 +21,7 @@ const HomeScreenTabNavigation = () => {
     return <SplashScreen />;
   } else if (!state.isLoading && !state.isLoggedIn) {
     return <LoginStackNavigator />;
-  }
-  // else if (!state.isLoading && state.isUseBiometric && !state.isLoggedIn) {
-  //   return <BiometricScreen />;
-  // }
-  else {
+  } else {
     return (
       <Tab.Navigator
         screenOptions={{

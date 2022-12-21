@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import HeaderUser from "../components/HeaderUser";
 import {
   FONT_FAMILY_BOLD,
@@ -26,6 +26,7 @@ import { Icon } from "@rneui/base";
 const MapScreen = (props) => {
   console.log("props", props.route);
   const state = useContext(MainContext);
+  const mapRef = useRef();
   const [position, setPosition] = useState({
     latitude: props.route?.params?.data?.coords?.latitude,
     longitude: props.route?.params?.data?.coords?.longitude,
@@ -40,10 +41,12 @@ const MapScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
       <MapView
+        ref={mapRef}
         style={styles.map}
         initialRegion={position}
         followsUserLocation={true}
@@ -84,7 +87,7 @@ const MapScreen = (props) => {
       </MapView>
       <View style={styles.floatButtons}>
         <TouchableOpacity
-          onPress={() => console.log("COME")}
+          onPress={() => mapRef.current.animateToRegion(position)}
           style={styles.buttonContainer}
         >
           <Icon
@@ -129,12 +132,12 @@ export default MapScreen;
 
 const styles = StyleSheet.create({
   map: {
-    ...StyleSheet.absoluteFillObject,
     marginBottom: 70,
+    height: "100%",
   },
   floatButtons: {
     position: "absolute", //use absolute position to show button on top of the map
-    top: "30%", //for center align
+    top: "20%", //for center align
     left: 10,
     alignSelf: "flex-end", //for align to right
   },

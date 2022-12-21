@@ -1,12 +1,7 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
-import { SERVER_URL } from "../constant";
+import React, { useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import * as Font from "expo-font";
 import * as Notifications from "expo-notifications";
-import { useNavigation } from "@react-navigation/native";
-
-// Credo1234@
 
 const MainContext = React.createContext();
 
@@ -31,10 +26,8 @@ export const MainStore = (props) => {
   const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
   const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
   const [loginByBiometric, setLoginByBiometric] = useState(false); //Biometric тохиргоогоор нэвтрэх
-
   const [loginErrorMsg, setLoginErrorMsg] = useState("");
 
-  const navigation = useNavigation();
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
@@ -58,64 +51,6 @@ export const MainStore = (props) => {
 
     return token;
   }
-
-  async function sendPushNotification(expoPushToken) {
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "Original Title",
-      body: "And here is the body!",
-      data: { aaa: "goes here" },
-      // badge: 7, //App -н Icon дээр харагдах тоо
-    };
-
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Accept-encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(message),
-    });
-  }
-
-  useEffect(() => {
-    registerForPushNotificationsAsync().then((token) =>
-      setExpoPushToken(token)
-    ); //TOKEN хадгалах
-
-    // Ирсэн Notification
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification); // Энд Notification -ы Object ирнэ
-      });
-
-    //Notification дээр дарах
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        // console.log(response);
-      });
-
-    return () => {
-      //Notification -г ажилласны дараа чөлөөлж өгөх
-      Notifications.removeNotificationSubscription(
-        notificationListener.current
-      );
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, []);
-
-  const getCustomFont = async () => {
-    // Custom FONT унших
-    await Font.loadAsync({
-      "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
-      "Nunito-Light": require("../../assets/fonts/Nunito-Light.ttf"),
-    });
-    generateLast3Years();
-    checkUserData();
-    // logout();
-  };
 
   const generateLast3Years = () => {
     // Сүүлийн 3 жилийг сартай GENERATE хийх
@@ -153,14 +88,72 @@ export const MainStore = (props) => {
     });
     setLast3Years(yearsWithMonths);
   };
+  async function sendPushNotification(expoPushToken) {
+    const message = {
+      to: expoPushToken,
+      sound: "default",
+      title: "Original Title",
+      body: "And here is the body!",
+      data: { aaa: "goes here" },
+      // badge: 7, //App -н Icon дээр харагдах тоо
+    };
+
+    // https://expo.dev/notifications
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
+  }
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then((token) => {
+      console.log("TOKEN", token);
+      setExpoPushToken(token);
+    }); //TOKEN хадгалах
+
+    // Ирсэн Notification
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification); // Энд Notification -ы Object ирнэ
+      });
+
+    //Notification дээр дарах
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        // console.log(response);
+      });
+
+    return () => {
+      //Notification -г ажилласны дараа чөлөөлж өгөх
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
+  const getCustomFont = async () => {
+    // Custom FONT унших
+    await Font.loadAsync({
+      "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
+      "Nunito-Light": require("../../assets/fonts/Nunito-Light.ttf"),
+    });
+    generateLast3Years();
+    checkUserData();
+    // logout();
+  };
+
   useEffect(() => {
     getCustomFont();
   }, []);
 
   //Апп ажиллахад утасны local storage -с мэдээлэл шалгах
   const checkUserData = async () => {
-    // AsyncStorage.removeItem("user");
-    // AsyncStorage.removeItem("uuid");
     try {
       await AsyncStorage.getItem("uuid").then(async (uuid_value) => {
         setUuid(uuid_value);
@@ -171,6 +164,7 @@ export const MainStore = (props) => {
             setIsUseBiometric(true);
             setLoginByBiometric(true);
           } else {
+            getUserDataLocalStorage();
             setIsUseBiometric(false);
             setLoginByBiometric(false);
           }
@@ -204,6 +198,7 @@ export const MainStore = (props) => {
     });
   };
   const logout = () => {
+    console.log("LOGOUT");
     setIsLoggedIn(false);
     setLoginErrorMsg("");
     // AsyncStorage.removeItem("user");
@@ -236,6 +231,8 @@ export const MainStore = (props) => {
         setLoginErrorMsg,
         loginByBiometric,
         getUserDataLocalStorage,
+        expoPushToken,
+        sendPushNotification,
       }}
     >
       {props.children}

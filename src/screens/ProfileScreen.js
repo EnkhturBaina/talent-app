@@ -11,7 +11,12 @@ import {
 } from "react-native";
 import React, { useContext, useState } from "react";
 import { Button, Icon } from "@rneui/base";
-import { FONT_FAMILY_BOLD, MAIN_COLOR, MAIN_COLOR_GRAY } from "../constant";
+import {
+  FONT_FAMILY_BOLD,
+  MAIN_BORDER_RADIUS,
+  MAIN_COLOR,
+  MAIN_COLOR_GRAY,
+} from "../constant";
 import HeaderUser from "../components/HeaderUser";
 import { Switch } from "react-native-paper";
 const { StatusBarManager } = NativeModules;
@@ -79,6 +84,7 @@ const ProfileScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
@@ -136,7 +142,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 1.0,
     elevation: 1,
-    borderRadius: 12,
+    borderRadius: MAIN_BORDER_RADIUS,
     marginHorizontal: 20,
     backgroundColor: "#fff",
   },

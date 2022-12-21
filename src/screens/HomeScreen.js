@@ -19,8 +19,6 @@ import task from "../../assets/homeScreen/task.png";
 import employee from "../../assets/homeScreen/employee.png";
 import salary from "../../assets/homeScreen/salary.png";
 import help from "../../assets/homeScreen/help.png";
-import inArrow from "../../assets/homeScreen/inArrow.png";
-import outArrow from "../../assets/homeScreen/outArrow.png";
 import { Icon, Button } from "@rneui/base";
 import {
   FONT_FAMILY_BOLD,
@@ -40,6 +38,8 @@ const HomeScreen = (props) => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [dateByName, setDateByName] = useState(null);
+  const [inTime, setInTime] = useState(null);
+  const [outTime, setOutTime] = useState(null);
   const [time, setTime] = useState();
   var date = new Date();
 
@@ -61,65 +61,6 @@ const HomeScreen = (props) => {
     { img: help, label: "Тусламж", nav: "" },
   ];
 
-  const general_style = require("../style");
-
-  useEffect(() => {
-    setDateByName(whatDay());
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date().toLocaleTimeString());
-    }, 1000);
-
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
-  useEffect(() => {
-    console.log("location =======>", location);
-  }, [location]);
-
-  const trackAttendance = async (type) => {
-    await axios({
-      method: "post",
-      url: `${SERVER_URL}/mobile/attendance/track`,
-      headers: {
-        Authorization: `Bearer ${state.token}`,
-      },
-      data: {
-        ERPEmployeeId: state.userId,
-        GMCompanyId: state.companyId,
-        Type: type,
-        Break: "",
-        MobileUUID: state.uuid,
-        latitude: location.latitude,
-        longitude: location.longitude,
-      },
-    })
-      .then((response) => {
-        console.log("track Attendance ======>", response.data.Extra);
-        if (response.data?.Type == 0) {
-          // setAttendanceList(response.data.Extra);
-        } else if (response.data?.Type == 1) {
-          console.log("WARNING", response.data.Msg);
-        } else if (response.data?.Type == 2) {
-        }
-      })
-      .catch(function (error) {
-        console.log("error", error);
-      });
-  };
   const whatDay = () => {
     switch (date.getDay()) {
       case 1:
@@ -141,12 +82,92 @@ const HomeScreen = (props) => {
     }
   };
 
+  const general_style = require("../style");
+
+  useEffect(() => {
+    //Тухайн өдрийн нэрийг харуулах
+    setDateByName(whatDay());
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+
+    //Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
+    if (state.userData?.attendance_type?.details) {
+      state.userData?.attendance_type?.details.map((el) => {
+        if (el.WeekDay == date.getDay()) {
+          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "00:00");
+          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "00:00");
+        }
+      });
+    } else {
+      setInTime("00:00");
+      setOutTime("00:00");
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+  useEffect(() => {
+    // console.log("location =======>", location);
+  }, [location]);
+
+  const trackAttendance = async (type) => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/attendance/track`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: state.userId,
+        GMCompanyId: state.companyId,
+        Type: type,
+        Break: "",
+        MobileUUID: state.uuid,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+    })
+      .then((response) => {
+        // console.log("track Attendance ======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          // setAttendanceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+      })
+      .catch(function (error) {
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+
   return (
     <SafeAreaView
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
         paddingBottom: 80,
+        backgroundColor: "#fff",
       }}
     >
       <CustomSnackbar
@@ -155,6 +176,13 @@ const HomeScreen = (props) => {
         text={snackBarMsg}
       />
       <HeaderUser />
+      <Text>{state.expoPushToken}</Text>
+      <Button
+        title="Notification"
+        onPress={async () => {
+          await state.sendPushNotification(state.expoPushToken);
+        }}
+      />
       <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
         <View style={styles.mainContainer}>
           <View style={styles.attendanceContainer}>
@@ -165,12 +193,12 @@ const HomeScreen = (props) => {
               </Text>
               <Text style={styles.currentTime}>{time}</Text>
               <Text style={general_style.generalYellowText}>
-                Ажлын цаг: 9:00-18:00
+                Ажлын цаг: {inTime}-{outTime}
               </Text>
             </View>
             <View style={styles.registerContainer}>
               <Image source={come} style={styles.inOutClockImg} />
-              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>09:05</Text>
+              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>{inTime}</Text>
               <Button
                 containerStyle={{ width: "40%" }}
                 buttonStyle={{
@@ -203,7 +231,7 @@ const HomeScreen = (props) => {
             </View>
             <View style={styles.registerContainer}>
               <Image source={out} style={styles.inOutClockImg} />
-              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>18:20</Text>
+              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>{outTime}</Text>
               <Button
                 containerStyle={{ width: "40%" }}
                 buttonStyle={{

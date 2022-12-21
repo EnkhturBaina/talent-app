@@ -23,6 +23,7 @@ import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 import axios from "axios";
 import Loader from "../components/Loader";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const RequestListScreen = (props) => {
   const state = useContext(MainContext);
@@ -68,7 +69,13 @@ const RequestListScreen = (props) => {
         setLoadingAbsences(false);
       })
       .catch(function (error) {
-        console.log("error", error);
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+        // console.log("error", error.response.status);
       });
   };
   useEffect(() => {
@@ -80,6 +87,7 @@ const RequestListScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
@@ -108,7 +116,7 @@ const RequestListScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} bounces={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
         {loadingAbsences ? (
           <Loader />
         ) : !loadingAbsences && absenceList == "" ? (
@@ -195,14 +203,14 @@ const styles = StyleSheet.create({
   },
   stack1: {
     padding: 5,
-    backgroundColor: "#c2c2c2",
+    backgroundColor: "#d9d9d9",
     width: "50%",
     height: "100%",
   },
   stack2: {
     padding: 5,
     width: "50%",
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#edebeb",
     height: "100%",
   },
   title: {

@@ -1,5 +1,6 @@
-import { StyleSheet, View, Image, LogBox, Text } from "react-native";
+import { StyleSheet, View, Image, LogBox } from "react-native";
 import React, { useEffect, useRef } from "react";
+import talent_logo from "../../assets/talent_logo.png";
 import LottieView from "lottie-react-native";
 
 if (__DEV__) {
@@ -31,8 +32,28 @@ const SplashScreen = () => {
 
   useEffect(() => {}, []);
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>SplashScreen</Text>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#fff",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Image
+        style={{ resizeMode: "contain", width: "70%", height: "50%" }}
+        source={talent_logo}
+      />
+      <LottieView
+        autoPlay
+        ref={animation}
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: "transparent",
+        }}
+        source={require("../../assets/loader.json")}
+      />
     </View>
   );
 };

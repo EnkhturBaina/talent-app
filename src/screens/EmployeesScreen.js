@@ -78,7 +78,12 @@ const EmployeesScreen = (props) => {
         setLoadingEmployees(false);
       })
       .catch(function (error) {
-        console.log("error", error);
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
       });
   };
 
@@ -86,19 +91,24 @@ const EmployeesScreen = (props) => {
     getCompanyEmployees();
   }, []);
 
-  if (loadingEmployees) {
-    return <Loader />;
-  }
   return (
     <SafeAreaView
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
-        marginBottom: Dimensions.get("window").height * 0.58,
+        // marginBottom: Dimensions.get("window").height * 0.58,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
-      <View style={{ width: "100%", marginRight: "auto", marginLeft: "auto" }}>
+      <View
+        style={{
+          width: "100%",
+          marginRight: "auto",
+          marginLeft: "auto",
+          flex: 1,
+        }}
+      >
         <Searchbar
           placeholder="Нэр, баг, хэлтэсээр хайх..."
           onChangeText={onChangeSearch}
@@ -108,7 +118,7 @@ const EmployeesScreen = (props) => {
             fontFamily: FONT_FAMILY_LIGHT,
           }}
           style={styles.searchBar}
-          elevation={0}
+          elevation={1}
         />
 
         <View>
@@ -130,57 +140,65 @@ const EmployeesScreen = (props) => {
             </TouchableOpacity>
           </ScrollView>
         </View>
-
-        {filteredData && filteredData != "" ? (
-          <AlphabetList
-            data={searchVal ? filteredData : employees}
-            index={CUSTOM_INDEX_EMPLOYEE}
-            uncategorizedAtTop={true}
-            style={styles.contactsContainer}
-            indexContainerStyle={{
-              width: 30,
-              height: 300,
-              // position: "absolute",
-              // right: -20,
-            }}
-            indexLetterContainerStyle={{
-              width: "100%",
-              height: 30,
-              marginTop: 5,
-            }}
-            indexLetterStyle={{
-              fontSize: 20,
-              fontFamily: FONT_FAMILY_BOLD,
-            }}
-            renderCustomItem={(item) => (
-              <TouchableOpacity
-                style={styles.listItemContainer}
-                onPress={() => {
-                  setSelectedEmployee(item);
-                  sheetRef.current.open();
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
+        {loadingEmployees ? (
+          <Loader />
+        ) : !filteredData && filteredData != "" ? (
+          <Text style={styles.emptyText}>Ажилтан олдсонгүй</Text>
+        ) : (
+          <View
+            style={{ flex: 1, paddingBottom: Platform.OS === "ios" ? 50 : 70 }}
+          >
+            <AlphabetList
+              data={searchVal ? filteredData : employees}
+              index={CUSTOM_INDEX_EMPLOYEE}
+              uncategorizedAtTop={true}
+              style={styles.contactsContainer}
+              indexContainerStyle={{
+                width: 30,
+                height: 300,
+                // position: "absolute",
+                // right: -20,
+              }}
+              indexLetterContainerStyle={{
+                width: "100%",
+                height: 30,
+                marginTop: 5,
+              }}
+              indexLetterStyle={{
+                fontSize: 20,
+                fontFamily: FONT_FAMILY_BOLD,
+              }}
+              renderCustomItem={(item) => (
+                <TouchableOpacity
+                  style={styles.listItemContainer}
+                  onPress={() => {
+                    setSelectedEmployee(item);
+                    sheetRef.current.open();
                   }}
                 >
-                  <Image source={{ uri: item.Image }} style={styles.userImg} />
-                  <View style={{ flexDirection: "column", marginLeft: 10 }}>
-                    <Text style={styles.listItemLabel}>{item.value}</Text>
-                    <Text style={styles.listItemDep}>{item.Position}</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                    }}
+                  >
+                    <Image
+                      source={{ uri: item.Image }}
+                      style={styles.userImg}
+                    />
+                    <View style={{ flexDirection: "column", marginLeft: 10 }}>
+                      <Text style={styles.listItemLabel}>{item.value}</Text>
+                      <Text style={styles.listItemDep}>{item.Position}</Text>
+                    </View>
                   </View>
+                </TouchableOpacity>
+              )}
+              renderCustomSectionHeader={(section) => (
+                <View style={styles.sectionHeaderContainer}>
+                  <Text style={styles.sectionHeaderLabel}>{section.title}</Text>
                 </View>
-              </TouchableOpacity>
-            )}
-            renderCustomSectionHeader={(section) => (
-              <View style={styles.sectionHeaderContainer}>
-                <Text style={styles.sectionHeaderLabel}>{section.title}</Text>
-              </View>
-            )}
-          />
-        ) : (
-          <Text style={styles.notFoundText}>Ажилтан олдсонгүй</Text>
+              )}
+            />
+          </View>
         )}
       </View>
       <RBSheet
@@ -269,14 +287,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: MAIN_BORDER_RADIUS,
     height: 40,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.0,
-    elevation: 1,
   },
   favUserImg: {
     width: 60,

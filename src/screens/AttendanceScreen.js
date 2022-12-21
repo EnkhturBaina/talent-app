@@ -62,7 +62,7 @@ const AttendanceScreen = (props) => {
       },
     })
       .then((response) => {
-        console.log("getEmployee AttendanceList======>", response.data.Extra);
+        // console.log("getEmployee AttendanceList======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setAttendanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {
@@ -72,7 +72,12 @@ const AttendanceScreen = (props) => {
         setLoadingAttendanceList(false);
       })
       .catch(function (error) {
-        console.log("error", error);
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
       });
   };
 
@@ -125,6 +130,7 @@ const AttendanceScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
