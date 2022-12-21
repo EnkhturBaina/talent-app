@@ -97,7 +97,7 @@ const RequestListScreen = (props) => {
           buttonStyle={{
             backgroundColor: MAIN_COLOR,
             borderRadius: MAIN_BORDER_RADIUS,
-            paddingVertical: 10,
+            height: 40,
           }}
           title="Хүсэлт илгээх"
           titleStyle={{

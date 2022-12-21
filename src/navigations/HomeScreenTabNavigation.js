@@ -18,8 +18,10 @@ const Tab = createBottomTabNavigator();
 const HomeScreenTabNavigation = () => {
   const state = useContext(MainContext);
   if (state.isLoading) {
+    // Апп ачааллах бүрт SplashScreen харуулах
     return <SplashScreen />;
   } else if (!state.isLoading && !state.isLoggedIn) {
+    // Нэвтрээгүй үед
     return <LoginStackNavigator />;
   } else {
     return (

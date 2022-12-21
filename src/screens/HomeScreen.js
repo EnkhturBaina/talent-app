@@ -22,6 +22,7 @@ import help from "../../assets/homeScreen/help.png";
 import { Icon, Button } from "@rneui/base";
 import {
   FONT_FAMILY_BOLD,
+  FONT_FAMILY_LIGHT,
   MAIN_COLOR_GRAY,
   MAIN_COLOR_GREEN,
   MAIN_COLOR_RED,
@@ -35,13 +36,15 @@ import CustomSnackbar from "../components/CustomSnackbar";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
   const [errorMsg, setErrorMsg] = useState(null);
-  const [dateByName, setDateByName] = useState(null);
-  const [inTime, setInTime] = useState(null);
-  const [outTime, setOutTime] = useState(null);
-  const [time, setTime] = useState();
+  const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
+  const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
+  const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
+  const [time, setTime] = useState(); //Live Цаг
   var date = new Date();
+
+  const general_style = require("../style");
 
   const [visibleSnack, setVisibleSnack] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState("");
@@ -82,8 +85,6 @@ const HomeScreen = (props) => {
     }
   };
 
-  const general_style = require("../style");
-
   useEffect(() => {
     //Тухайн өдрийн нэрийг харуулах
     setDateByName(whatDay());
@@ -107,6 +108,7 @@ const HomeScreen = (props) => {
         }
       });
     } else {
+      //Ажиллахгүй өдөр 00:00 харуулах
       setInTime("00:00");
       setOutTime("00:00");
     }
@@ -274,7 +276,7 @@ const HomeScreen = (props) => {
                   }
                 >
                   <Image source={el.img} style={styles.eachMenuImg} />
-                  <Text style={general_style.generalText}>{el.label}</Text>
+                  <Text style={styles.menuName}>{el.label}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -359,5 +361,10 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     resizeMode: "contain",
+  },
+  menuName: {
+    fontSize: 14,
+    fontFamily: FONT_FAMILY_LIGHT,
+    marginTop: 5,
   },
 });

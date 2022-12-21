@@ -1,22 +1,22 @@
 import React, { useContext } from "react";
+import { StyleSheet, TouchableOpacity, Text } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { FONT_FAMILY_BOLD } from "../constant";
+import { Icon } from "@rneui/base";
+
+import MainContext from "../contexts/MainContext";
 
 import LoginScreen from "../screens/LoginScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
-import { StyleSheet, TouchableOpacity, Text } from "react-native";
 import ProfileScreen from "../screens/ProfileScreen";
 import NewsScreen from "../screens/NewsScreen";
-import MainContext from "../contexts/MainContext";
 import AttendanceScreen from "../screens/AttendanceScreen";
 import EmployeesScreen from "../screens/EmployeesScreen";
-import { FONT_FAMILY_BOLD } from "../constant";
-import { Icon } from "@rneui/base";
 import RequestListScreen from "../screens/RequestListScreen";
 import BiometricScreen from "../screens/BiometricScreen";
 import SendRequestScreen from "../screens/SendRequestScreen";
 import MapScreen from "../screens/MapScreen";
-// import { Icon } from "@rneui/base";
 
 const Stack = createStackNavigator();
 
@@ -27,8 +27,8 @@ const LoginStackNavigator = (props) => {
       initialRouteName="LoginTab"
       screenOptions={{
         headerStyle: {
-          shadowColor: "transparent", // this covers iOS
-          elevation: 0, // this covers Android
+          shadowColor: "transparent",
+          elevation: 0,
         },
       }}
     >
@@ -48,17 +48,18 @@ const LoginStackNavigator = (props) => {
         options={{
           title: "Нууц үг сэргээх",
           headerTitleStyle: {},
-          headerLeft: () => (
-            <TouchableOpacity
-              style={styles.headerLeftContainer}
-              onPress={() => {
-                props.navigation.goBack();
-              }}
-            >
-              {/* <Icon type="feather" name="arrow-left" /> */}
-              <Text>BACK</Text>
-            </TouchableOpacity>
-          ),
+          // headerLeft: () => (
+          //   <TouchableOpacity
+          //     style={styles.headerLeftContainer}
+          //     onPress={() => {
+          //       // props.navigation.goBack();
+          //       props.navigation.navigate("LoginTab");
+          //     }}
+          //   >
+          //     {/* <Icon type="feather" name="arrow-left" /> */}
+          //     <Text>BACK</Text>
+          //   </TouchableOpacity>
+          // ),
         }}
       />
       <Stack.Screen
@@ -98,8 +99,8 @@ const HomeScreenStackNavigator = (props) => {
       screenOptions={{
         // headerShown: false,
         headerStyle: {
-          shadowColor: "transparent", // this covers iOS
-          elevation: 0, // this covers Android
+          shadowColor: "transparent",
+          elevation: 0,
         },
       }}
     >
@@ -238,8 +239,8 @@ const NewsScreenStackNavigator = (props) => {
       screenOptions={{
         headerShown: false,
         headerStyle: {
-          shadowColor: "transparent", // this covers iOS
-          elevation: 0, // this covers Android
+          shadowColor: "transparent",
+          elevation: 0,
         },
       }}
     >
@@ -263,8 +264,8 @@ const ProfileStackNavigator = (props) => {
       screenOptions={{
         headerShown: false,
         headerStyle: {
-          shadowColor: "transparent", // this covers iOS
-          elevation: 0, // this covers Android
+          shadowColor: "transparent",
+          elevation: 0,
         },
       }}
     >

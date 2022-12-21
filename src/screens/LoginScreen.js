@@ -16,14 +16,13 @@ import talent_logo from "../../assets/talent_logo.png";
 import { TextInput } from "react-native-paper";
 import {
   MAIN_COLOR,
-  MAIN_COLOR_GRAY,
   MAIN_BORDER_RADIUS,
   FONT_FAMILY_BOLD,
   SERVER_URL,
 } from "../constant";
-import { v4 as uuidv4 } from "uuid";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 import * as LocalAuthentication from "expo-local-authentication";
 
 const LoginScreen = (props) => {
@@ -31,20 +30,22 @@ const LoginScreen = (props) => {
   const [password, setPassword] = useState("Credo1234@");
   const [hidePassword, setHidePassword] = useState(true);
 
-  const [visibleSnack, setVisibleSnack] = useState(false);
-  const [snackBarMsg, setSnackBarMsg] = useState("");
-
   const [biometrics, setBiometrics] = useState(false);
   const [grantAccess, setGrantAccess] = useState(false);
 
+  const [visibleSnack, setVisibleSnack] = useState(false);
+  const [snackBarMsg, setSnackBarMsg] = useState("");
+
+  //Snacbkbar харуулах
   const onToggleSnackBar = (msg) => {
     setVisibleSnack(!visibleSnack);
     setSnackBarMsg(msg);
   };
 
+  //Snacbkbar хаах
   const onDismissSnackBar = () => setVisibleSnack(false);
 
-  const checkHandle = () => {
+  const checkHandleUseBiometric = () => {
     state.setIsUseBiometric(!state.isUseBiometric);
   };
 
@@ -54,9 +55,11 @@ const LoginScreen = (props) => {
 
   const confirmBio = () => {
     (async () => {
+      // face || fingerprint дэмждэг эсэх
       const compatible = await LocalAuthentication.hasHardwareAsync();
       // console.log("compatible", compatible);
       setBiometrics(compatible);
+      // face || fingerprint байгаа эсэх
       LocalAuthentication.isEnrolledAsync().then(
         (hasFingerprintOrFacialData) => {
           if (!hasFingerprintOrFacialData) {
@@ -65,6 +68,7 @@ const LoginScreen = (props) => {
           } else {
             compatible
               ? (async () => {
+                  // face || fingerprint уншуулсан эсэх
                   const auth = await LocalAuthentication.authenticateAsync();
                   // console.log("auth", auth);
                   if (auth.success) {
@@ -74,7 +78,9 @@ const LoginScreen = (props) => {
                     setGrantAccess(false);
                   }
                 })()
-              : null;
+              : () => {
+                  state.getUserDataLocalStorage();
+                };
           }
         }
       );
@@ -118,6 +124,7 @@ const LoginScreen = (props) => {
           email: state.email,
           password: password,
           MobileUUID: state.uuid ? state.uuid : tempUUID,
+          ExponentPushToken: state.expoPushToken,
           // MobileUUID: "812206e1-7a92-4f7d-98b4-10e06cb5dfee",
         },
       })
@@ -292,7 +299,7 @@ const LoginScreen = (props) => {
             checkedIcon="checkbox-outline"
             uncheckedIcon="checkbox-blank-outline"
             checked={state.isUseBiometric}
-            onPress={checkHandle}
+            onPress={checkHandleUseBiometric}
             checkedColor={MAIN_COLOR}
             uncheckedColor={MAIN_COLOR}
           />

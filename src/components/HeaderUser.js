@@ -48,9 +48,10 @@ const styles = StyleSheet.create({
   topText: {
     color: MAIN_COLOR,
     fontFamily: FONT_FAMILY_BOLD,
+    fontSize: 16,
   },
   userName: {
     fontFamily: FONT_FAMILY_BOLD,
-    fontSize: 26,
+    fontSize: 24,
   },
 });

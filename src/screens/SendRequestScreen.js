@@ -9,6 +9,7 @@ import {
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
+  ScrollView,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon } from "@rneui/themed";
@@ -90,14 +91,18 @@ const SendRequestScreen = (props) => {
       <SafeAreaView
         style={{
           flex: 1,
-          paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
           backgroundColor: "#fff",
+          flexDirection: "column",
         }}
       >
         {isLoadingRequest ? (
           <Loader />
         ) : (
-          <>
+          <ScrollView
+            contentContainerStyle={{
+              paddingBottom: 80,
+            }}
+          >
             <View style={styles.touchableSelectContainer}>
               <Text style={styles.title}>Хүсэлтийн төрөл сонгох</Text>
               <TouchableOpacity
@@ -171,7 +176,7 @@ const SendRequestScreen = (props) => {
                 }}
               />
             </View>
-          </>
+          </ScrollView>
         )}
 
         <BottomSheet
@@ -218,12 +223,12 @@ const styles = StyleSheet.create({
   },
   description: {
     height: 200,
-    backgroundColor: MAIN_COLOR_GRAY,
     marginTop: 10,
     borderRadius: MAIN_BORDER_RADIUS,
     padding: 10,
     borderWidth: 1,
     borderColor: MAIN_COLOR,
+    textAlignVertical: "top",
   },
   title: {
     fontFamily: FONT_FAMILY_LIGHT,

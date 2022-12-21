@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Font from "expo-font";
 import * as Notifications from "expo-notifications";
+import axios from "axios";
+import { SERVER_URL } from "../constant";
 
 const MainContext = React.createContext();
 
@@ -26,10 +28,11 @@ export const MainStore = (props) => {
   const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
   const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
   const [loginByBiometric, setLoginByBiometric] = useState(false); //Biometric тохиргоогоор нэвтрэх
-  const [loginErrorMsg, setLoginErrorMsg] = useState("");
+  const [loginErrorMsg, setLoginErrorMsg] = useState(""); // Login хуудсанд харагдах алдааны MSG
 
-  const [expoPushToken, setExpoPushToken] = useState("");
-  const [notification, setNotification] = useState(false);
+  const [expoPushToken, setExpoPushToken] = useState(""); // EXPO PUSH NOTIFICATION TOKEN Хадгалах
+  const [notification, setNotification] = useState(false); // Ирсэн Notification -ы мэдээлэл (OBJECT)
+
   const notificationListener = useRef();
   const responseListener = useRef();
 
@@ -95,7 +98,7 @@ export const MainStore = (props) => {
       title: "Original Title",
       body: "And here is the body!",
       data: { aaa: "goes here" },
-      // badge: 7, //App -н Icon дээр харагдах тоо
+      // badge: 7, //App -н Icon дээр харагдах тоо (BADGE)
     };
 
     // https://expo.dev/notifications
@@ -145,7 +148,6 @@ export const MainStore = (props) => {
     });
     generateLast3Years();
     checkUserData();
-    // logout();
   };
 
   useEffect(() => {
@@ -183,14 +185,17 @@ export const MainStore = (props) => {
     await AsyncStorage.getItem("user").then(async (user_value) => {
       // console.log("user_value VALUE ====>", user_value);
       if (user_value != null) {
+        // Local Storage -д хэрэглэгчийн мэдээлэл байвал
         const JSONValue = JSON.parse(user_value);
-        console.log("USER VALUE ====>", JSONValue);
+        // console.log("USER VALUE ====>", JSONValue);
+        setEmail(JSONValue.user?.PersonalEmail);
         setToken(JSONValue.token);
         setUserId(JSONValue.user?.id);
         setCompanyId(JSONValue.user?.GMCompanyId);
         setUserData(JSONValue.user);
-        setIsLoggedIn(true);
-        setIsLoading(false);
+        getUserUUID(JSONValue.user?.PersonalEmail, JSONValue.token);
+        // setIsLoggedIn(true);
+        // setIsLoading(false);
       } else {
         setIsLoggedIn(false);
         setIsLoading(false);
@@ -198,12 +203,52 @@ export const MainStore = (props) => {
     });
   };
   const logout = () => {
-    console.log("LOGOUT");
     setIsLoggedIn(false);
     setLoginErrorMsg("");
     // AsyncStorage.removeItem("user");
     // AsyncStorage.removeItem("use_bio");
     setLoginByBiometric(false);
+  };
+
+  // Тухайн хэрэглэгчийн утсанд хадгалагдсан UUID == DATABASE.UUID ижил байгаа эсэхийг шалгах
+  const getUserUUID = async (local_email, local_token) => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/token/list`,
+      headers: {
+        Authorization: `Bearer ${local_token}`,
+      },
+      data: {
+        email: local_email,
+      },
+    })
+      .then((response) => {
+        // console.log("get UserUUID ======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          if (response.data?.Extra?.MobileUUID != uuid) {
+            setIsLoggedIn(false);
+            setIsLoading(false);
+            AsyncStorage.removeItem("use_bio");
+            setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+            logout();
+          } else {
+            setIsLoggedIn(true);
+            setIsLoading(false);
+          }
+          // setAttendanceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          // console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+      })
+      .catch(function (error) {
+        if (error.response.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          setIsLoading(false);
+          logout();
+        }
+      });
   };
   return (
     <MainContext.Provider
