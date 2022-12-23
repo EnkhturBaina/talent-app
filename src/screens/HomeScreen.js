@@ -58,10 +58,10 @@ const HomeScreen = (props) => {
   const menu = [
     { img: Attendance, label: "Ирц", nav: "AttendanceScreen" },
     { img: request, label: "Хүсэлт", nav: "RequestListScreen" },
-    { img: task, label: "Даалгавар", nav: "" },
+    { img: task, label: "Даалгавар", nav: "TaskScreen" },
     { img: employee, label: "Ажилтан", nav: "EmployeesScreen" },
     { img: salary, label: "Цалин", nav: "" },
-    { img: help, label: "Тусламж", nav: "" },
+    { img: help, label: "Тусламж", nav: "HelpScreen" },
   ];
 
   const whatDay = () => {
