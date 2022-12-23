@@ -6,7 +6,6 @@ import {
   NativeModules,
   Platform,
   TouchableOpacity,
-  Image,
   ScrollView,
 } from "react-native";
 import React, { useContext, useState } from "react";
@@ -21,9 +20,8 @@ const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
 import { Icon } from "@rneui/base";
 import BottomSheet from "../components/BottomSheet";
-import avatar from "../../assets/avatar.jpg";
 
-const NewsScreen = () => {
+const TaskScreen = () => {
   const state = useContext(MainContext);
   var date = new Date();
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
@@ -62,8 +60,7 @@ const NewsScreen = () => {
         >
           <View style={styles.firstRow}>
             <View style={styles.stack1}>
-              <Image source={avatar} style={styles.userImg} />
-              <Text style={styles.name}>Батбаяр</Text>
+              <Text style={styles.name}>Даалгавар</Text>
             </View>
             <View style={styles.stack2}>
               <Text style={styles.date}>2022-12-09 19:00</Text>
@@ -71,7 +68,7 @@ const NewsScreen = () => {
           </View>
           <View style={styles.secondRow}>
             <Text numberOfLines={2} style={styles.description}>
-              Өнөөдөр 14:00 цагаас компаний танилцуулах өдөрлөг болно
+              Шинэ ажилтан Д.Баярсайханд шинэ аккаунт хаяг нээж өгөх
             </Text>
           </View>
         </TouchableOpacity>
@@ -88,7 +85,7 @@ const NewsScreen = () => {
   );
 };
 
-export default NewsScreen;
+export default TaskScreen;
 
 const styles = StyleSheet.create({
   headerActions: {
@@ -114,7 +111,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 10,
     flexDirection: "column",
     flex: 1,
-    height: 100,
+    height: 80,
     marginTop: 10,
     marginHorizontal: 20,
     backgroundColor: "#d9d9d9",
@@ -126,26 +123,18 @@ const styles = StyleSheet.create({
   stack1: {
     flexDirection: "row",
     alignItems: "center",
-    width: "50%",
+    width: "60%",
   },
   stack2: {
-    width: "50%",
+    width: "40%",
     alignItems: "flex-end",
   },
   secondRow: {
-    flexDirection: "row",
-    marginTop: 5,
-  },
-  userImg: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
-    // resizeMode: "contain",
-    overflow: "hidden",
+    marginTop: 10,
+    justifyContent: "center",
   },
   name: {
     fontFamily: FONT_FAMILY_BOLD,
-    marginLeft: 10,
   },
   date: {
     fontFamily: FONT_FAMILY_LIGHT,

@@ -17,6 +17,9 @@ import RequestListScreen from "../screens/RequestListScreen";
 import BiometricScreen from "../screens/BiometricScreen";
 import SendRequestScreen from "../screens/SendRequestScreen";
 import MapScreen from "../screens/MapScreen";
+import NotificationScreen from "../screens/NotificationScreen";
+import TaskScreen from "../screens/TaskScreen";
+import HelpScreen from "../screens/HelpScreen";
 
 const Stack = createStackNavigator();
 
@@ -228,6 +231,36 @@ const HomeScreenStackNavigator = (props) => {
           },
         }}
       />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="TaskScreen"
+        component={TaskScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="HelpScreen"
+        component={HelpScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -247,6 +280,15 @@ const NewsScreenStackNavigator = (props) => {
       <Stack.Screen
         name="NewsScreen"
         component={NewsScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
         options={{
           title: "",
           headerTitleStyle: {},
@@ -274,6 +316,15 @@ const ProfileStackNavigator = (props) => {
         component={ProfileScreen}
         options={{
           title: "",
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {},
           headerLeft: () => <></>,
         }}
       />

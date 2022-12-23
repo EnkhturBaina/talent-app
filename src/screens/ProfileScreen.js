@@ -7,7 +7,6 @@ import {
   Platform,
   Image,
   TouchableOpacity,
-  Share,
 } from "react-native";
 import React, { useContext, useState } from "react";
 import { Button, Icon } from "@rneui/base";
@@ -27,27 +26,16 @@ const ProfileScreen = (props) => {
   const [isSwitchOn, setIsSwitchOn] = useState(false);
 
   const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
-  const shareSelected = async (data) => {
-    try {
-      const result = await Share.share({
-        message: data,
-      });
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-        } else {
-        }
-      } else if (result.action === Share.dismissedAction) {
-      }
-    } catch (error) {}
-  };
 
   const menus = [
-    { img: "user", label: "Миний мэдээлэл", nav: "" },
-    { img: "mail", label: "Санал хүсэлт илгээх", nav: "" },
-    { img: "bell", label: "Мэдэгдэлүүд", nav: "" },
     {
-      img: "settings",
-      label: "Ирэх/Явах цаг сануулах",
+      img: require("../../assets/profile/profile.png"),
+      label: "Миний профайл",
+      nav: "",
+    },
+    {
+      img: require("../../assets/profile/notif.png"),
+      label: "Ирц бүртгэл сануулах",
       nav: "",
       render: (
         <Switch
@@ -57,22 +45,24 @@ const ProfileScreen = (props) => {
         />
       ),
     },
-    { img: "key", label: "Нууц үг солих", nav: "" },
-    { img: "refresh-cw", label: "Байгууллага солих", nav: "" },
     {
-      img: "share-2",
-      label: "Хуваалцах",
+      img: require("../../assets/profile/pass.png"),
+      label: "Нууц үг солих",
       nav: "",
-      action: (e) => shareSelected(e),
     },
     {
-      img: "globe",
+      img: require("../../assets/profile/org.png"),
+      label: "Байгууллагийн тохиргоо",
+      nav: "",
+    },
+    {
+      img: require("../../assets/profile/lang.png"),
       label: "Хэл солих",
       nav: "",
       render: <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>Монгол</Text>,
     },
     {
-      img: "log-out",
+      img: "",
       label: "Гарах",
       nav: "",
       action: () => state.logout(),
@@ -103,7 +93,11 @@ const ProfileScreen = (props) => {
               key={index}
             >
               <View style={styles.iconContainer}>
-                <Icon name={el.img} type="feather" color={MAIN_COLOR} />
+                <Image
+                  source={el.img}
+                  color={MAIN_COLOR}
+                  style={{ width: 30, height: 30 }}
+                />
               </View>
               <View style={styles.cardTextContainer}>
                 <View>

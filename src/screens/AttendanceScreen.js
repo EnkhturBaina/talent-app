@@ -18,6 +18,8 @@ import {
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
   MAIN_COLOR_GRAY,
+  MAIN_COLOR_GREEN,
+  MAIN_COLOR_RED,
   SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
@@ -61,7 +63,7 @@ const AttendanceScreen = (props) => {
       },
     })
       .then((response) => {
-        // console.log("getEmployee AttendanceList======>", response.data.Extra);
+        console.log("getEmployee AttendanceList======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setAttendanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {
@@ -88,13 +90,28 @@ const AttendanceScreen = (props) => {
     );
   };
 
-  const renderHeader = (section) => {
+  const renderHeader = (section, index, isActive) => {
     return (
-      <View style={styles.headerContainer}>
+      <View
+        style={[
+          styles.headerContainer,
+          { borderColor: isActive ? MAIN_COLOR : MAIN_COLOR_GRAY },
+        ]}
+      >
         <Text style={styles.headerTitle}>{section.Date}</Text>
         <Text style={styles.headerTitle}>{section.WorkingHours}</Text>
-        <Text style={styles.headerTitle}>
-          {section.Overtime} / {section.DeficitTime}
+        <Text
+          style={[
+            styles.headerTitle,
+            {
+              color:
+                section.DeficitTimeFormat == "00:00:00"
+                  ? MAIN_COLOR_GREEN
+                  : MAIN_COLOR_RED,
+            },
+          ]}
+        >
+          -{section.DeficitTimeFormat}
         </Text>
         <Text
           style={[
@@ -111,7 +128,28 @@ const AttendanceScreen = (props) => {
   const renderContent = (section) => {
     return (
       <View style={styles.content}>
-        <Text>{section.titleMN}</Text>
+        <View style={styles.headerTitleContainer}>
+          <View style={{ flexDirection: "column", width: "25%" }}>
+            <Text style={styles.headerSubTitle}>Ирсэн цаг</Text>
+            <Text style={styles.headerSubData}>
+              {section.TimeIn?.substr(10, 6)}
+            </Text>
+          </View>
+          <View style={{ flexDirection: "column", width: "25%" }}>
+            <Text style={styles.headerSubTitle}>Завсарлага</Text>
+            <Text style={styles.headerSubData}>{section.Break}</Text>
+          </View>
+          <View style={{ flexDirection: "column", width: "25%" }}>
+            <Text style={styles.headerSubTitle}>Явсан цаг</Text>
+            <Text style={styles.headerSubData}>
+              {section.TimeOut?.substr(10, 6)}
+            </Text>
+          </View>
+          <View style={{ flexDirection: "column", width: "25%" }}>
+            <Text style={styles.headerSubTitle}>Илүү цаг</Text>
+            <Text style={styles.headerSubData}>{section.OvertimeFormat}</Text>
+          </View>
+        </View>
       </View>
     );
   };
@@ -147,7 +185,7 @@ const AttendanceScreen = (props) => {
       <View style={styles.headerTitleContainer}>
         <Text style={styles.headerTitleBold}>Огноо</Text>
         <Text style={styles.headerTitleBold}>Ажилласан цаг</Text>
-        <Text style={styles.headerTitleBold}>Илүү цаг/Хоцролт</Text>
+        <Text style={styles.headerTitleBold}>Хоцорсон цаг</Text>
         <Text style={styles.headerTitleBold}>Төлөв</Text>
       </View>
       <ScrollView
@@ -253,5 +291,15 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY_BOLD,
     textAlign: "center",
     marginTop: 10,
+  },
+  headerSubTitle: {
+    fontFamily: FONT_FAMILY_BOLD,
+    textAlign: "center",
+    fontSize: 12,
+  },
+  headerSubData: {
+    fontFamily: FONT_FAMILY_LIGHT,
+    textAlign: "center",
+    fontSize: 12,
   },
 });

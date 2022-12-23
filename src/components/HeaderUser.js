@@ -3,9 +3,12 @@ import React, { useContext } from "react";
 import { View, Image, Text, StyleSheet } from "react-native";
 import { FONT_FAMILY_BOLD, MAIN_COLOR } from "../constant";
 import MainContext from "../contexts/MainContext";
+import { useNavigation } from "@react-navigation/native";
 
-function HeaderUser() {
+const HeaderUser = (props) => {
+  const navigation = useNavigation();
   const state = useContext(MainContext);
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.headerFirstSection}>
@@ -15,12 +18,17 @@ function HeaderUser() {
           <Text style={styles.userName}>{state.userData.FirstName}</Text>
         </View>
       </View>
-      <Icon type="feather" name="bell" size={30} />
+      <Icon
+        type="feather"
+        name="bell"
+        size={30}
+        onPress={() => navigation.navigate("NotificationScreen")}
+      />
     </View>
   );
-}
+};
 
-export default HeaderUser;
+export default React.memo(HeaderUser);
 
 const styles = StyleSheet.create({
   headerContainer: {
