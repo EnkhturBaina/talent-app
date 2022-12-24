@@ -32,7 +32,6 @@ import HeaderUser from "../components/HeaderUser";
 import * as Location from "expo-location";
 import axios from "axios";
 import MainContext from "../contexts/MainContext";
-import CustomSnackbar from "../components/CustomSnackbar";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
@@ -45,15 +44,6 @@ const HomeScreen = (props) => {
   var date = new Date();
 
   const general_style = require("../style");
-
-  const [visibleSnack, setVisibleSnack] = useState(false);
-  const [snackBarMsg, setSnackBarMsg] = useState("");
-  const onToggleSnackBar = (msg) => {
-    setVisibleSnack(!visibleSnack);
-    setSnackBarMsg(msg);
-  };
-
-  const onDismissSnackBar = () => setVisibleSnack(false);
 
   const menu = [
     { img: Attendance, label: "Ирц", nav: "AttendanceScreen" },
@@ -172,11 +162,6 @@ const HomeScreen = (props) => {
         backgroundColor: "#fff",
       }}
     >
-      <CustomSnackbar
-        visible={visibleSnack}
-        dismiss={onDismissSnackBar}
-        text={snackBarMsg}
-      />
       <HeaderUser />
       <Text>{state.expoPushToken}</Text>
       <Button
@@ -216,11 +201,7 @@ const HomeScreen = (props) => {
               />
               <TouchableOpacity
                 onPress={() =>
-                  location
-                    ? props.navigation.navigate("MapScreen", { data: location })
-                    : onToggleSnackBar(
-                        "Байршил тодорхойлж байна. Түр хүлээнэ үү"
-                      )
+                  props.navigation.navigate("MapScreen", { data: location })
                 }
               >
                 <Icon
@@ -249,11 +230,7 @@ const HomeScreen = (props) => {
               />
               <TouchableOpacity
                 onPress={() =>
-                  location
-                    ? props.navigation.navigate("MapScreen", { data: location })
-                    : onToggleSnackBar(
-                        "Байршил тодорхойлж байна. Түр хүлээнэ үү"
-                      )
+                  props.navigation.navigate("MapScreen", { data: location })
                 }
               >
                 <Icon

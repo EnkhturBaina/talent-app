@@ -14,6 +14,7 @@ import {
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  MAIN_COLOR_GRAY,
 } from "../constant";
 const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
@@ -38,6 +39,7 @@ const HelpScreen = () => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
+        backgroundColor: "#fff",
       }}
     >
       <HeaderUser />
@@ -53,20 +55,37 @@ const HelpScreen = () => {
         </TouchableOpacity>
       </View>
       <TouchableOpacity
-        style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
+        style={styles.profileCard}
+        onPress={() => console.log("A")}
       >
-        <View style={styles.firstRow}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Даалгавар</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>2022-12-09 19:00</Text>
+        <View style={styles.iconContainer}>
+          <Icon type="feather" name="bell" size={30} />
+        </View>
+        <View style={styles.cardTextContainer}>
+          <View>
+            <Text style={styles.cardTopText}>Зааварчилгаа /iOS/</Text>
           </View>
         </View>
-        <View style={styles.secondRow}>
-          <Text numberOfLines={2} style={styles.description}>
-            Шинэ ажилтан Д.Баярсайханд шинэ аккаунт хаяг нээж өгөх
-          </Text>
+
+        <View style={styles.cardArrow}>
+          <Icon name="keyboard-arrow-right" type="material-icons" />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.profileCard}
+        onPress={() => console.log("A")}
+      >
+        <View style={styles.iconContainer}>
+          <Icon type="feather" name="bell" size={30} />
+        </View>
+        <View style={styles.cardTextContainer}>
+          <View>
+            <Text style={styles.cardTopText}>Зааварчилгаа /Android/</Text>
+          </View>
+        </View>
+
+        <View style={styles.cardArrow}>
+          <Icon name="keyboard-arrow-right" type="material-icons" />
         </View>
       </TouchableOpacity>
     </SafeAreaView>
@@ -95,39 +114,38 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     alignSelf: "flex-start",
   },
-  taskContainer: {
-    borderLeftWidth: 10,
-    flexDirection: "column",
-    flex: 1,
-    height: 80,
-    marginTop: 10,
-    marginHorizontal: 20,
-    backgroundColor: "#d9d9d9",
-    padding: 10,
-  },
-  firstRow: {
-    flexDirection: "row",
-  },
-  stack1: {
+  profileCard: {
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
-    width: "60%",
-  },
-  stack2: {
-    width: "40%",
-    alignItems: "flex-end",
-  },
-  secondRow: {
+    borderColor: MAIN_COLOR_GRAY,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 1,
+    borderRadius: MAIN_BORDER_RADIUS,
+    marginHorizontal: 20,
+    backgroundColor: "#fff",
     marginTop: 10,
-    justifyContent: "center",
+    borderWidth: 0.5,
   },
-  name: {
+  iconContainer: {
+    marginHorizontal: 10,
+    width: 40,
+  },
+  cardTextContainer: {
+    textAlign: "left",
+  },
+  cardTopText: {
     fontFamily: FONT_FAMILY_BOLD,
+    color: "#000",
   },
-  date: {
-    fontFamily: FONT_FAMILY_LIGHT,
-  },
-  description: {
-    fontFamily: FONT_FAMILY_LIGHT,
+  cardArrow: {
+    position: "absolute",
+    right: 10,
   },
 });

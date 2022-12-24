@@ -22,19 +22,35 @@ import MapView, { Marker, Circle } from "react-native-maps";
 import come from "../../assets/homeScreen/come.png";
 import out from "../../assets/homeScreen/out.png";
 import { Icon } from "@rneui/base";
+import * as Location from "expo-location";
 
-const MapScreen = (props) => {
-  console.log("props", props.route);
+const MapScreen = () => {
   const state = useContext(MainContext);
+  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
   const mapRef = useRef();
   const [position, setPosition] = useState({
-    latitude: props.route?.params?.data?.coords?.latitude,
-    longitude: props.route?.params?.data?.coords?.longitude,
+    latitude: state.userData?.office?.latitude,
+    longitude: state.userData?.office?.longitude,
     latitudeDelta: 0.0121,
     longitudeDelta: 0.0121,
   });
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    (async () => {
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  useEffect(() => {
+    console.log("location", location);
+    setPosition({
+      latitude: location && location.coords ? location.coords.latitude : 0,
+      longitude: location && location.coords ? location.coords.longitude : 0,
+      latitudeDelta: 0.0121,
+      longitudeDelta: 0.0121,
+    });
+  }, [location]);
 
   return (
     <SafeAreaView
