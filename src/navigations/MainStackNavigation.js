@@ -20,6 +20,7 @@ import MapScreen from "../screens/MapScreen";
 import NotificationScreen from "../screens/NotificationScreen";
 import TaskScreen from "../screens/TaskScreen";
 import HelpScreen from "../screens/HelpScreen";
+import SalaryScreen from "../screens/SalaryScreen";
 
 const Stack = createStackNavigator();
 
@@ -254,6 +255,16 @@ const HomeScreenStackNavigator = (props) => {
       <Stack.Screen
         name="HelpScreen"
         component={HelpScreen}
+        options={{
+          title: "",
+          headerShown: false,
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="SalaryScreen"
+        component={SalaryScreen}
         options={{
           title: "",
           headerShown: false,

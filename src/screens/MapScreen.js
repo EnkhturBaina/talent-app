@@ -22,11 +22,9 @@ import MapView, { Marker, Circle } from "react-native-maps";
 import come from "../../assets/homeScreen/come.png";
 import out from "../../assets/homeScreen/out.png";
 import { Icon } from "@rneui/base";
-import * as Location from "expo-location";
 
 const MapScreen = () => {
   const state = useContext(MainContext);
-  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
   const mapRef = useRef();
   const [position, setPosition] = useState({
     latitude: state.userData?.office?.latitude,
@@ -34,24 +32,6 @@ const MapScreen = () => {
     latitudeDelta: 0.0121,
     longitudeDelta: 0.0121,
   });
-
-  useEffect(() => {
-    (async () => {
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
-
-  useEffect(() => {
-    console.log("location", location);
-    setPosition({
-      latitude: location && location.coords ? location.coords.latitude : 0,
-      longitude: location && location.coords ? location.coords.longitude : 0,
-      latitudeDelta: 0.0121,
-      longitudeDelta: 0.0121,
-    });
-  }, [location]);
-
   return (
     <SafeAreaView
       style={{
@@ -64,7 +44,16 @@ const MapScreen = () => {
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={position}
+        initialRegion={
+          state.location
+            ? {
+                latitude: state.location?.coords?.latitude,
+                longitude: state.location?.coords?.longitude,
+                latitudeDelta: 0.0121,
+                longitudeDelta: 0.0121,
+              }
+            : position
+        }
         followsUserLocation={true}
         scrollEnabled={true}
         zoomEnabled={true}
@@ -82,7 +71,15 @@ const MapScreen = () => {
           strokeColor={MAIN_COLOR}
           fillColor={"rgba(255, 182, 41, 0.3)"}
         />
-        <Marker title="Таны одоогийн байршил" coordinate={position} />
+        <Marker
+          title="Таны одоогийн байршил"
+          coordinate={{
+            latitude: state.location?.coords?.latitude,
+            longitude: state.location?.coords?.longitude,
+            latitudeDelta: 0.0121,
+            longitudeDelta: 0.0121,
+          }}
+        />
         <Marker
           title={state.userData?.company?.Name}
           coordinate={{
@@ -103,7 +100,16 @@ const MapScreen = () => {
       </MapView>
       <View style={styles.floatButtons}>
         <TouchableOpacity
-          onPress={() => mapRef.current.animateToRegion(position)}
+          onPress={() =>
+            state.location
+              ? mapRef.current.animateToRegion({
+                  latitude: state.location?.coords?.latitude,
+                  longitude: state.location?.coords?.longitude,
+                  latitudeDelta: 0.0121,
+                  longitudeDelta: 0.0121,
+                })
+              : null
+          }
           style={styles.buttonContainer}
         >
           <Icon

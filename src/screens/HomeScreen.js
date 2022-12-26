@@ -29,13 +29,11 @@ import {
   SERVER_URL,
 } from "../constant";
 import HeaderUser from "../components/HeaderUser";
-import * as Location from "expo-location";
 import axios from "axios";
 import MainContext from "../contexts/MainContext";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
-  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
   const [errorMsg, setErrorMsg] = useState(null);
   const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
   const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
@@ -50,7 +48,7 @@ const HomeScreen = (props) => {
     { img: request, label: "Хүсэлт", nav: "RequestListScreen" },
     { img: task, label: "Даалгавар", nav: "TaskScreen" },
     { img: employee, label: "Ажилтан", nav: "EmployeesScreen" },
-    { img: salary, label: "Цалин", nav: "" },
+    { img: salary, label: "Цалин", nav: "SalaryScreen" },
     { img: help, label: "Тусламж", nav: "HelpScreen" },
   ];
 
@@ -78,16 +76,6 @@ const HomeScreen = (props) => {
   useEffect(() => {
     //Тухайн өдрийн нэрийг харуулах
     setDateByName(whatDay());
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
 
     //Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
     if (state.userData?.attendance_type?.details) {
@@ -113,9 +101,6 @@ const HomeScreen = (props) => {
       clearInterval(timer);
     };
   }, []);
-  useEffect(() => {
-    // console.log("location =======>", location);
-  }, [location]);
 
   const trackAttendance = async (type) => {
     await axios({
@@ -130,8 +115,8 @@ const HomeScreen = (props) => {
         Type: type,
         Break: "",
         MobileUUID: state.uuid,
-        latitude: location.latitude,
-        longitude: location.longitude,
+        latitude: state.location.latitude,
+        longitude: state.location.longitude,
       },
     })
       .then((response) => {
@@ -200,9 +185,7 @@ const HomeScreen = (props) => {
                 onPress={() => console.log("COME")}
               />
               <TouchableOpacity
-                onPress={() =>
-                  props.navigation.navigate("MapScreen", { data: location })
-                }
+                onPress={() => props.navigation.navigate("MapScreen")}
               >
                 <Icon
                   name="arrow-right"
@@ -229,9 +212,7 @@ const HomeScreen = (props) => {
                 onPress={() => console.log("OUT")}
               />
               <TouchableOpacity
-                onPress={() =>
-                  props.navigation.navigate("MapScreen", { data: location })
-                }
+                onPress={() => props.navigation.navigate("MapScreen")}
               >
                 <Icon
                   name="arrow-right"

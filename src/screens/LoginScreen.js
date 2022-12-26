@@ -24,6 +24,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as Location from "expo-location";
 
 const LoginScreen = (props) => {
   const state = useContext(MainContext);
@@ -189,6 +190,11 @@ const LoginScreen = (props) => {
 
   useEffect(() => {
     state.loginByBiometric && confirmBio();
+
+    (async () => {
+      let location = await Location.getCurrentPositionAsync({});
+      state.setLocation(location);
+    })();
   }, []);
 
   return (
