@@ -148,13 +148,13 @@ const HomeScreen = (props) => {
       }}
     >
       <HeaderUser />
-      <Text>{state.expoPushToken}</Text>
+      {/* <Text>{state.expoPushToken}</Text>
       <Button
         title="Notification"
         onPress={async () => {
           await state.sendPushNotification(state.expoPushToken);
         }}
-      />
+      /> */}
       <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
         <View style={styles.mainContainer}>
           <View style={styles.attendanceContainer}>

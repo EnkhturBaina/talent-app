@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon } from "@rneui/themed";
-import BottomSheet from "../components/BottomSheet";
+import BottomSheetRequest from "../components/BottomSheetRequest";
 import {
   FONT_FAMILY_BOLD,
   FONT_FAMILY_LIGHT,
@@ -29,10 +29,11 @@ import Loader from "../components/Loader";
 
 const SendRequestScreen = (props) => {
   const state = useContext(MainContext);
-  const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
-  const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
+  const [data, setData] = useState(""); //BottomSheetRequest рүү дамжуулах Дата
+  const [uselessParam, setUselessParam] = useState(false); //BottomSheetRequest -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [fieldName, setFieldName] = useState(""); //Аль утгыг OBJECT -с update хийх
+  const [showColor, setShowColor] = useState(""); //Өнгө харуулах эсэх
   const [absenceTypes, setAbsenceTypes] = useState(""); //Хүсэлтийн төрөл
   const [isLoadingRequest, setIsLoadingRequest] = useState(true);
 
@@ -80,11 +81,12 @@ const SendRequestScreen = (props) => {
     requestData && console.log("requestData", requestData);
   }, [requestData]);
 
-  const setLookupData = (data, display, field) => {
+  const setLookupData = (data, display, field, color) => {
     setData(data); //Lookup -д харагдах дата
     setDisplayName(display); //Lookup -д харагдах датаны текст талбар
     setFieldName(field);
     setUselessParam(!uselessParam);
+    setShowColor(color);
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -101,6 +103,7 @@ const SendRequestScreen = (props) => {
           <ScrollView
             contentContainerStyle={{
               paddingBottom: 80,
+              marginHorizontal: 20,
             }}
           >
             <View style={styles.touchableSelectContainer}>
@@ -108,12 +111,35 @@ const SendRequestScreen = (props) => {
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
-                  setLookupData(absenceTypes.types, "Name", "requestType")
+                  setLookupData(absenceTypes.types, "Name", "requestType", true)
                 }
               >
-                <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                  {requestData.requestType.Name}
-                </Text>
+                <View style={styles.dataContainer}>
+                  {requestData.requestType?.Name ? (
+                    <View
+                      style={{
+                        height: 20,
+                        width: 40,
+                        borderRadius: 8,
+                        backgroundColor:
+                          requestData?.requestType?.category?.CalendarColor,
+                      }}
+                    ></View>
+                  ) : null}
+                  <Text
+                    style={{
+                      fontFamily: FONT_FAMILY_BOLD,
+                      marginLeft: requestData.requestType?.Name ? 10 : 0,
+                      flex: 1,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {requestData.requestType?.Name
+                      ? requestData.requestType?.Name
+                      : "Сонгох"}
+                  </Text>
+                </View>
+
                 <Icon
                   name="keyboard-arrow-down"
                   type="material-icons"
@@ -121,30 +147,144 @@ const SendRequestScreen = (props) => {
                 />
               </TouchableOpacity>
             </View>
-            <View style={styles.touchableSelectContainer}>
-              <Text style={styles.title}>Эхлэх огноо</Text>
-              <TouchableOpacity
-                style={styles.touchableSelect}
-                onPress={() =>
-                  setLookupData(state.last3Years, "name", "startDate")
-                }
-              >
-                <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                  {/* {requestData.name} */}
-                </Text>
-                <Icon
-                  name="keyboard-arrow-down"
-                  type="material-icons"
-                  size={30}
-                />
-              </TouchableOpacity>
+            <View style={styles.halfContainer}>
+              <View style={styles.touchableHalfSelectContainer}>
+                <Text style={styles.title}>Эхлэх огноо</Text>
+                <TouchableOpacity
+                  style={styles.touchableSelect}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.touchableHalfSelectContainer}>
+                <Text style={styles.title}>Эхний өдөр цаг</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.touchableSelect,
+                    {
+                      backgroundColor:
+                        requestData.requestType &&
+                        requestData.requestType?.AllowHours
+                          ? "#edebeb"
+                          : "#fff",
+                    },
+                  ]}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                  disabled={
+                    requestData.requestType &&
+                    requestData.requestType?.AllowHours
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
+
+            <View style={styles.halfContainer}>
+              <View style={styles.touchableHalfSelectContainer}>
+                <Text style={styles.title}>Дуусах огноо</Text>
+                <TouchableOpacity
+                  style={styles.touchableSelect}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.touchableHalfSelectContainer}>
+                <Text style={styles.title}>Дуусах өдөр цаг</Text>
+                <TouchableOpacity
+                  style={styles.touchableSelect}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {requestData.requestType &&
+            requestData.requestType?.AllowHalfDay ? (
+              <View style={styles.touchableSelectContainer}>
+                <Text style={styles.title}>Эхлэх өдөр ажиллах хуваарь</Text>
+                <TouchableOpacity
+                  style={styles.touchableSelect}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            {requestData.requestType &&
+            requestData.requestType?.AllowHalfDay ? (
+              <View style={styles.touchableSelectContainer}>
+                <Text style={styles.title}>Дуусах өдөр ажиллах хуваарь</Text>
+                <TouchableOpacity
+                  style={styles.touchableSelect}
+                  onPress={() =>
+                    setLookupData(state.last3Years, "name", "startDate", false)
+                  }
+                >
+                  <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                    {/* {requestData.name} */}
+                  </Text>
+                  <Icon
+                    name="keyboard-arrow-down"
+                    type="material-icons"
+                    size={30}
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : null}
             <View style={styles.touchableSelectContainer}>
-              <Text style={styles.title}>Дуусах огноо</Text>
+              <Text style={styles.title}>Орлож ажиллах</Text>
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
-                  setLookupData(state.last3Years, "name", "endDate")
+                  setLookupData(state.last3Years, "name", "startDate", false)
                 }
               >
                 <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
@@ -179,7 +319,7 @@ const SendRequestScreen = (props) => {
           </ScrollView>
         )}
 
-        <BottomSheet
+        <BottomSheetRequest
           bodyText={data}
           dragDown={true}
           backClick={true}
@@ -191,6 +331,7 @@ const SendRequestScreen = (props) => {
               [fieldName]: e,
             }))
           }
+          isColor={showColor}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -201,10 +342,21 @@ export default SendRequestScreen;
 
 const styles = StyleSheet.create({
   touchableSelectContainer: {
-    width: "90%",
-    marginRight: "auto",
-    marginLeft: "auto",
     marginTop: 10,
+  },
+  halfContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  dataContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+  },
+  touchableHalfSelectContainer: {
+    width: "48%",
   },
   touchableSelect: {
     flexDirection: "row",
