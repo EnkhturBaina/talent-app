@@ -33,6 +33,8 @@ export const MainStore = (props) => {
   const [expoPushToken, setExpoPushToken] = useState(""); // EXPO PUSH NOTIFICATION TOKEN Хадгалах
   const [notification, setNotification] = useState(false); // Ирсэн Notification -ы мэдээлэл (OBJECT)
 
+  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
+
   const notificationListener = useRef();
   const responseListener = useRef();
 
@@ -250,6 +252,7 @@ export const MainStore = (props) => {
         }
       });
   };
+
   return (
     <MainContext.Provider
       value={{
@@ -278,6 +281,8 @@ export const MainStore = (props) => {
         getUserDataLocalStorage,
         expoPushToken,
         sendPushNotification,
+        location,
+        setLocation,
       }}
     >
       {props.children}
