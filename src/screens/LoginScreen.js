@@ -214,6 +214,7 @@ const LoginScreen = (props) => {
           visible={visibleSnack}
           dismiss={onDismissSnackBar}
           text={snackBarMsg}
+          topPos={30}
         />
         <View style={styles.loginImageContainer}>
           <Image style={styles.loginImg} source={talent_logo} />

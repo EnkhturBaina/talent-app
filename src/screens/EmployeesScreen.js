@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Dimensions,
   Linking,
 } from "react-native";
 import React, { useRef, useState, useEffect, useContext } from "react";
@@ -22,13 +21,13 @@ import {
   MAIN_COLOR_GRAY,
   SERVER_URL,
 } from "../constant";
-import avatar from "../../assets/avatar.jpg";
 const { StatusBarManager } = NativeModules;
 import { AlphabetList } from "react-native-section-alphabet-list";
 import RBSheet from "react-native-raw-bottom-sheet";
 import call from "../../assets/call.png";
 import sms from "../../assets/sms.png";
 import email from "../../assets/email.png";
+import pin from "../../assets/pin.png";
 import axios from "axios";
 import MainContext from "../contexts/MainContext";
 import Loader from "../components/Loader";
@@ -41,6 +40,7 @@ const EmployeesScreen = (props) => {
   const sheetRef = useRef(); //Bottomsheet
   const [filteredData, setFilteredData] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [favList, setFavList] = useState([]);
 
   const onChangeSearch = (query) => {
     setSearchVal(query);
@@ -78,7 +78,7 @@ const EmployeesScreen = (props) => {
         setLoadingEmployees(false);
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
@@ -90,6 +90,9 @@ const EmployeesScreen = (props) => {
   useEffect(() => {
     getCompanyEmployees();
   }, []);
+  useEffect(() => {
+    console.log("favList", favList);
+  }, [favList]);
 
   return (
     <SafeAreaView
@@ -131,13 +134,22 @@ const EmployeesScreen = (props) => {
               marginVertical: 15,
             }}
           >
-            <TouchableOpacity
-              onPress={() => sheetRef.current.open()}
-              style={styles.favContainer}
-            >
-              <Image source={avatar} style={styles.favUserImg} />
-              <Text numberOfLines={1}>Ana DavisssDavisssssss</Text>
-            </TouchableOpacity>
+            {favList &&
+              favList.map((el, index) => {
+                return (
+                  <TouchableOpacity
+                    onPress={() => sheetRef.current.open()}
+                    style={styles.favContainer}
+                    key={index}
+                  >
+                    <Image
+                      source={{ uri: el.Image }}
+                      style={styles.favUserImg}
+                    />
+                    <Text numberOfLines={1}>{el.FullName}</Text>
+                  </TouchableOpacity>
+                );
+              })}
           </ScrollView>
         </View>
         {loadingEmployees ? (
@@ -259,6 +271,12 @@ const EmployeesScreen = (props) => {
               >
                 <Image source={email} style={styles.actionIcon} />
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.listItemContainer}
+                onPress={() => setFavList((arr) => [...arr, selectedEmployee])}
+              >
+                <Image source={pin} style={styles.actionIcon} />
+              </TouchableOpacity>
             </View>
             <Text style={styles.listItemDep}>{selectedEmployee.email}</Text>
             <Text style={styles.listItemDep}>{selectedEmployee.Mobile}</Text>
@@ -336,7 +354,7 @@ const styles = StyleSheet.create({
     // width: "90%",
     padding: 10,
     marginBottom: 5,
-    marginHorizontal: 10,
+    marginHorizontal: 5,
   },
   listItemLabel: {
     fontFamily: FONT_FAMILY_BOLD,

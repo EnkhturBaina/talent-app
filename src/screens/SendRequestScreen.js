@@ -3,7 +3,6 @@ import {
   Text,
   View,
   SafeAreaView,
-  NativeModules,
   TouchableOpacity,
   TextInput,
   Keyboard,
@@ -11,21 +10,22 @@ import {
   ScrollView,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
-import { Icon } from "@rneui/themed";
+import { Icon, Button } from "@rneui/themed";
 import BottomSheetRequest from "../components/BottomSheetRequest";
 import {
   FONT_FAMILY_BOLD,
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
-  MAIN_COLOR_GRAY,
   SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
 import axios from "axios";
-const { StatusBarManager } = NativeModules;
 import Loader from "../components/Loader";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import CustomSnackbar from "../components/CustomSnackbar";
+import CustomDialog from "../components/CustomDialog";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SendRequestScreen = (props) => {
   const state = useContext(MainContext);
@@ -41,6 +41,22 @@ const SendRequestScreen = (props) => {
   const [showFromTimePicker, setShowFromTimePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
   const [showToTimePicker, setShowToTimePicker] = useState(false);
+
+  const [visibleSnack, setVisibleSnack] = useState(false);
+  const [snackBarMsg, setSnackBarMsg] = useState("");
+
+  const [visibleDialog, setVisibleDialog] = useState(false);
+  const [dialogType, setDialogType] = useState("success");
+  const [dialogText, setDialogText] = useState("");
+
+  //Snacbkbar харуулах
+  const onToggleSnackBar = (msg) => {
+    setVisibleSnack(!visibleSnack);
+    setSnackBarMsg(msg);
+  };
+
+  //Snacbkbar хаах
+  const onDismissSnackBar = () => setVisibleSnack(false);
 
   const [requestData, setRequestData] = useState({
     GMCompanyId: "",
@@ -78,7 +94,7 @@ const SendRequestScreen = (props) => {
         setIsLoadingRequest(false);
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
@@ -89,9 +105,6 @@ const SendRequestScreen = (props) => {
   useEffect(() => {
     getAbsenceTypes();
   }, []);
-  useEffect(() => {
-    requestData && console.log("requestData", requestData);
-  }, [requestData]);
 
   const setLookupData = (data, display, field, color) => {
     setData(data); //Lookup -д харагдах дата
@@ -105,18 +118,69 @@ const SendRequestScreen = (props) => {
     if (type == "date") {
       setRequestData((prevState) => ({
         ...prevState,
-        [param]: data.toLocaleDateString(),
+        [param]: data.toLocaleDateString()?.split(".").join("-"), // DATE форматаас '.' -г '-' болгон хадгалах
       }));
     } else {
       setRequestData((prevState) => ({
         ...prevState,
-        [param]: data.toLocaleTimeString(),
+        [param]: data.toLocaleTimeString()?.slice(0, -3), // TIME форматаас секунд хасаж хадгалах
       }));
     }
     setShowFromDatePicker(false);
     setShowFromTimePicker(false);
     setShowToDatePicker(false);
     setShowToTimePicker(false);
+  };
+
+  const saveAbsence = async () => {
+    if (requestData.ERPAbsenceTypeCompanyId == "") {
+      onToggleSnackBar("Хүсэлтийн төрөл сонгоно уу.");
+    } else if (requestData.FromDate == "") {
+      onToggleSnackBar("Эхлэх огноо оруулна уу.");
+    } else if (requestData.ToDate == "") {
+      onToggleSnackBar("Дуусах огноо оруулна уу.");
+    } else {
+      await axios({
+        method: "post",
+        url: `${SERVER_URL}/mobile/absence/save`,
+        headers: {
+          Authorization: `Bearer ${state.token}`,
+        },
+        data: {
+          ERPEmployeeId: state.userId,
+          GMCompanyId: state.companyId,
+          FromDate: requestData.FromDate,
+          ToDate: requestData.ToDate,
+          ERPAbsenceTypeCompanyId: requestData.ERPAbsenceTypeCompanyId?.id,
+          Comment: requestData.Comment,
+          FromTime: requestData.FromTime,
+          ToTime: requestData.ToTime,
+          MobileUUID: state.uuid,
+        },
+      })
+        .then((response) => {
+          // console.log("save Absence======>", response.data);
+          if (response.data?.Type == 0) {
+            setDialogType("success");
+            setVisibleDialog(true);
+            setDialogText(response.data.Msg);
+          } else if (response.data?.Type == 1) {
+            console.log("WARNING", response.data.Msg);
+          } else if (response.data?.Type == 2) {
+          }
+          setIsLoadingRequest(false);
+        })
+        .catch(function (error) {
+          if (error.response?.status == "401") {
+            AsyncStorage.removeItem("use_bio");
+            state.setLoginErrorMsg(
+              "Холболт салсан байна. Та дахин нэвтэрнэ үү."
+            );
+            state.setIsLoading(false);
+            state.logout();
+          }
+        });
+    }
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -127,6 +191,12 @@ const SendRequestScreen = (props) => {
           flexDirection: "column",
         }}
       >
+        <CustomSnackbar
+          visible={visibleSnack}
+          dismiss={onDismissSnackBar}
+          text={snackBarMsg}
+          topPos={0}
+        />
         {isLoadingRequest ? (
           <Loader />
         ) : (
@@ -217,6 +287,8 @@ const SendRequestScreen = (props) => {
                   mode="date"
                   onConfirm={(date) => handleConfirm("date", "FromDate", date)}
                   onCancel={() => setShowFromDatePicker(false)}
+                  confirmTextIOS="Сонгох"
+                  cancelTextIOS="Хаах"
                 />
               </View>
               <View style={styles.touchableHalfSelectContainer}>
@@ -256,6 +328,8 @@ const SendRequestScreen = (props) => {
                   mode="time"
                   onConfirm={(time) => handleConfirm("time", "FromTime", time)}
                   onCancel={() => setShowFromTimePicker(false)}
+                  confirmTextIOS="Сонгох"
+                  cancelTextIOS="Хаах"
                 />
               </View>
             </View>
@@ -290,6 +364,8 @@ const SendRequestScreen = (props) => {
                   mode="date"
                   onConfirm={(date) => handleConfirm("date", "ToDate", date)}
                   onCancel={() => setShowToDatePicker(false)}
+                  confirmTextIOS="Сонгох"
+                  cancelTextIOS="Хаах"
                 />
               </View>
               <View style={styles.touchableHalfSelectContainer}>
@@ -327,6 +403,8 @@ const SendRequestScreen = (props) => {
                   mode="time"
                   onConfirm={(time) => handleConfirm("time", "ToTime", time)}
                   onCancel={() => setShowToTimePicker(false)}
+                  confirmTextIOS="Сонгох"
+                  cancelTextIOS="Хаах"
                 />
               </View>
             </View>
@@ -346,7 +424,9 @@ const SendRequestScreen = (props) => {
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.ERPFromDatePartId != ""
+                      ? requestData.ERPFromDatePartId.Name
+                      : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -372,7 +452,9 @@ const SendRequestScreen = (props) => {
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.ERPToDatePartId != ""
+                      ? requestData.ERPToDatePartId.Name
+                      : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -418,6 +500,23 @@ const SendRequestScreen = (props) => {
                 }}
               />
             </View>
+            <Button
+              containerStyle={{
+                width: "100%",
+                marginTop: 10,
+              }}
+              buttonStyle={{
+                backgroundColor: MAIN_COLOR,
+                borderRadius: MAIN_BORDER_RADIUS,
+                paddingVertical: 10,
+              }}
+              title="Хадгалах"
+              titleStyle={{
+                fontSize: 16,
+                fontFamily: FONT_FAMILY_BOLD,
+              }}
+              onPress={() => saveAbsence()}
+            />
           </ScrollView>
         )}
 
@@ -434,6 +533,20 @@ const SendRequestScreen = (props) => {
             }))
           }
           isColor={showColor}
+        />
+        <CustomDialog
+          visible={visibleDialog}
+          confirmFunction={() => {
+            setVisibleDialog(false);
+            props.navigation.goBack();
+          }}
+          declineFunction={() => {
+            setVisibleDialog(false);
+          }}
+          text={dialogText}
+          confirmBtnText="Буцах"
+          DeclineBtnText=""
+          type={dialogType}
         />
       </SafeAreaView>
     </TouchableWithoutFeedback>

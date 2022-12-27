@@ -7,8 +7,9 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Icon } from "@rneui/themed";
 import HeaderUser from "../components/HeaderUser";
 import BottomSheet from "../components/BottomSheet";
@@ -38,12 +39,23 @@ const AttendanceScreen = (props) => {
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [activeSections, setActiveSections] = useState([]);
   const [loadingAttendanceList, setLoadingAttendanceList] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
     setDisplayName(display); //Lookup -д харагдах датаны текст талбар
     setUselessParam(!uselessParam);
   };
+
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getEmployeeAttendanceList();
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
 
   const getEmployeeAttendanceList = async () => {
     setLoadingAttendanceList(true);
@@ -73,21 +85,13 @@ const AttendanceScreen = (props) => {
         setLoadingAttendanceList(false);
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
           state.logout();
         }
       });
-  };
-
-  const renderSectionTitle = (section) => {
-    return (
-      <View style={styles.content}>
-        <Text>1</Text>
-      </View>
-    );
   };
 
   const renderHeader = (section, index, isActive) => {
@@ -192,6 +196,15 @@ const AttendanceScreen = (props) => {
         contentContainerStyle={{
           paddingBottom: 60,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
+            colors={"#fff"}
+            tintColor={"#fff"}
+          />
+        }
       >
         {loadingAttendanceList ? (
           <Loader />

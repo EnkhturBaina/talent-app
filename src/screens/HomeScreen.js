@@ -129,7 +129,7 @@ const HomeScreen = (props) => {
         }
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);

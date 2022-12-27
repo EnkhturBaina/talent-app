@@ -244,7 +244,7 @@ export const MainStore = (props) => {
         }
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           setIsLoading(false);

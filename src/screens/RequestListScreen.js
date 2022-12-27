@@ -7,8 +7,9 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Icon, Button } from "@rneui/themed";
 import HeaderUser from "../components/HeaderUser";
 import BottomSheet from "../components/BottomSheet";
@@ -24,6 +25,7 @@ const { StatusBarManager } = NativeModules;
 import axios from "axios";
 import Loader from "../components/Loader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 
 const RequestListScreen = (props) => {
   const state = useContext(MainContext);
@@ -34,6 +36,20 @@ const RequestListScreen = (props) => {
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [absenceList, setAbsenceList] = useState(""); //Хүсэлтийн жагсаалт
   const [loadingAbsences, setLoadingAbsences] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  //Screen LOAD хийхэд дахин RENDER хийх
+  const isFocused = useIsFocused();
+
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getAbsences();
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
 
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
@@ -41,7 +57,12 @@ const RequestListScreen = (props) => {
     setUselessParam(!uselessParam);
   };
 
+  useEffect(() => {
+    getAbsences();
+  }, [isFocused, selectedDate]);
+
   const getAbsences = async () => {
+    console.log("getAbsences");
     setLoadingAbsences(true);
     await axios({
       method: "post",
@@ -69,18 +90,15 @@ const RequestListScreen = (props) => {
         setLoadingAbsences(false);
       })
       .catch(function (error) {
-        if (error.response.status == "401") {
+        if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
           state.logout();
         }
-        // console.log("error", error.response.status);
+        // console.log("error", error.response?.status);
       });
   };
-  useEffect(() => {
-    getAbsences();
-  }, [selectedDate]);
 
   return (
     <SafeAreaView
@@ -116,7 +134,18 @@ const RequestListScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 50 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
+            colors={"#fff"}
+            tintColor={"#fff"}
+          />
+        }
+      >
         {loadingAbsences ? (
           <Loader />
         ) : !loadingAbsences && absenceList == "" ? (
@@ -177,6 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginHorizontal: 20,
     alignItems: "center",
+    paddingBottom: 10,
   },
   yearMonthPicker: {
     flexDirection: "row",
