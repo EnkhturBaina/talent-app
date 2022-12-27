@@ -75,7 +75,7 @@ const AttendanceScreen = (props) => {
       },
     })
       .then((response) => {
-        console.log("getEmployee AttendanceList======>", response.data.Extra);
+        // console.log("getEmployee AttendanceList======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setAttendanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {

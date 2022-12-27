@@ -90,9 +90,6 @@ const EmployeesScreen = (props) => {
   useEffect(() => {
     getCompanyEmployees();
   }, []);
-  useEffect(() => {
-    console.log("favList", favList);
-  }, [favList]);
 
   return (
     <SafeAreaView
