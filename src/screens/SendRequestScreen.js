@@ -4,7 +4,6 @@ import {
   View,
   SafeAreaView,
   NativeModules,
-  Platform,
   TouchableOpacity,
   TextInput,
   Keyboard,
@@ -26,6 +25,7 @@ import MainContext from "../contexts/MainContext";
 import axios from "axios";
 const { StatusBarManager } = NativeModules;
 import Loader from "../components/Loader";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const SendRequestScreen = (props) => {
   const state = useContext(MainContext);
@@ -37,11 +37,23 @@ const SendRequestScreen = (props) => {
   const [absenceTypes, setAbsenceTypes] = useState(""); //Хүсэлтийн төрөл
   const [isLoadingRequest, setIsLoadingRequest] = useState(true);
 
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showFromTimePicker, setShowFromTimePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [showToTimePicker, setShowToTimePicker] = useState(false);
+
   const [requestData, setRequestData] = useState({
-    requestType: "", //Хүсэлтийн төрөл
-    startDate: "",
-    endDate: "",
-    description: "",
+    GMCompanyId: "",
+    ERPEmployeeId: "",
+    FromDate: "",
+    ToDate: "",
+    ERPSubstituteId: "",
+    ERPAbsenceTypeCompanyId: "",
+    ERPFromDatePartId: "",
+    ERPToDatePartId: "",
+    FromTime: "",
+    ToTime: "",
+    Comment: "",
   });
 
   const getAbsenceTypes = async () => {
@@ -88,6 +100,24 @@ const SendRequestScreen = (props) => {
     setUselessParam(!uselessParam);
     setShowColor(color);
   };
+
+  const handleConfirm = (type, param, data) => {
+    if (type == "date") {
+      setRequestData((prevState) => ({
+        ...prevState,
+        [param]: data.toLocaleDateString(),
+      }));
+    } else {
+      setRequestData((prevState) => ({
+        ...prevState,
+        [param]: data.toLocaleTimeString(),
+      }));
+    }
+    setShowFromDatePicker(false);
+    setShowFromTimePicker(false);
+    setShowToDatePicker(false);
+    setShowToTimePicker(false);
+  };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView
@@ -111,31 +141,39 @@ const SendRequestScreen = (props) => {
               <TouchableOpacity
                 style={styles.touchableSelect}
                 onPress={() =>
-                  setLookupData(absenceTypes.types, "Name", "requestType", true)
+                  setLookupData(
+                    absenceTypes.types,
+                    "Name",
+                    "ERPAbsenceTypeCompanyId",
+                    true
+                  )
                 }
               >
                 <View style={styles.dataContainer}>
-                  {requestData.requestType?.Name ? (
+                  {requestData.ERPAbsenceTypeCompanyId?.Name ? (
                     <View
                       style={{
                         height: 20,
                         width: 40,
                         borderRadius: 8,
                         backgroundColor:
-                          requestData?.requestType?.category?.CalendarColor,
+                          requestData?.ERPAbsenceTypeCompanyId?.category
+                            ?.CalendarColor,
                       }}
                     ></View>
                   ) : null}
                   <Text
                     style={{
                       fontFamily: FONT_FAMILY_BOLD,
-                      marginLeft: requestData.requestType?.Name ? 10 : 0,
+                      marginLeft: requestData.ERPAbsenceTypeCompanyId?.Name
+                        ? 10
+                        : 0,
                       flex: 1,
                     }}
                     numberOfLines={1}
                   >
-                    {requestData.requestType?.Name
-                      ? requestData.requestType?.Name
+                    {requestData.ERPAbsenceTypeCompanyId?.Name
+                      ? requestData.ERPAbsenceTypeCompanyId?.Name
                       : "Сонгох"}
                   </Text>
                 </View>
@@ -151,13 +189,22 @@ const SendRequestScreen = (props) => {
               <View style={styles.touchableHalfSelectContainer}>
                 <Text style={styles.title}>Эхлэх огноо</Text>
                 <TouchableOpacity
-                  style={styles.touchableSelect}
-                  onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
-                  }
+                  style={[
+                    styles.touchableSelect,
+                    {
+                      backgroundColor:
+                        requestData.ERPAbsenceTypeCompanyId == ""
+                          ? "#edebeb"
+                          : "#fff",
+                    },
+                  ]}
+                  onPress={() => setShowFromDatePicker(true)}
+                  disabled={requestData.ERPAbsenceTypeCompanyId == ""}
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.FromDate != ""
+                      ? requestData.FromDate
+                      : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -165,6 +212,12 @@ const SendRequestScreen = (props) => {
                     size={30}
                   />
                 </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showFromDatePicker}
+                  mode="date"
+                  onConfirm={(date) => handleConfirm("date", "FromDate", date)}
+                  onCancel={() => setShowFromDatePicker(false)}
+                />
               </View>
               <View style={styles.touchableHalfSelectContainer}>
                 <Text style={styles.title}>Эхний өдөр цаг</Text>
@@ -173,22 +226,24 @@ const SendRequestScreen = (props) => {
                     styles.touchableSelect,
                     {
                       backgroundColor:
-                        requestData.requestType &&
-                        requestData.requestType?.AllowHours
+                        (requestData.ERPAbsenceTypeCompanyId == "" && "#fff") ||
+                        (requestData.ERPAbsenceTypeCompanyId != "" &&
+                          requestData.ERPAbsenceTypeCompanyId?.AllowHours == 0)
                           ? "#edebeb"
                           : "#fff",
                     },
                   ]}
-                  onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
-                  }
+                  onPress={() => setShowFromTimePicker(true)}
                   disabled={
-                    requestData.requestType &&
-                    requestData.requestType?.AllowHours
+                    requestData.ERPAbsenceTypeCompanyId == "" ||
+                    (requestData.ERPAbsenceTypeCompanyId &&
+                      requestData.ERPAbsenceTypeCompanyId?.AllowHours == 0)
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.FromTime != ""
+                      ? requestData.FromTime
+                      : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -196,6 +251,12 @@ const SendRequestScreen = (props) => {
                     size={30}
                   />
                 </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showFromTimePicker}
+                  mode="time"
+                  onConfirm={(time) => handleConfirm("time", "FromTime", time)}
+                  onCancel={() => setShowFromTimePicker(false)}
+                />
               </View>
             </View>
 
@@ -203,13 +264,20 @@ const SendRequestScreen = (props) => {
               <View style={styles.touchableHalfSelectContainer}>
                 <Text style={styles.title}>Дуусах огноо</Text>
                 <TouchableOpacity
-                  style={styles.touchableSelect}
-                  onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
-                  }
+                  style={[
+                    styles.touchableSelect,
+                    {
+                      backgroundColor:
+                        requestData.ERPAbsenceTypeCompanyId == ""
+                          ? "#edebeb"
+                          : "#fff",
+                    },
+                  ]}
+                  onPress={() => setShowToDatePicker(true)}
+                  disabled={requestData.ERPAbsenceTypeCompanyId == ""}
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.ToDate != "" ? requestData.ToDate : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -217,17 +285,36 @@ const SendRequestScreen = (props) => {
                     size={30}
                   />
                 </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showToDatePicker}
+                  mode="date"
+                  onConfirm={(date) => handleConfirm("date", "ToDate", date)}
+                  onCancel={() => setShowToDatePicker(false)}
+                />
               </View>
               <View style={styles.touchableHalfSelectContainer}>
                 <Text style={styles.title}>Дуусах өдөр цаг</Text>
                 <TouchableOpacity
-                  style={styles.touchableSelect}
-                  onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
+                  style={[
+                    styles.touchableSelect,
+                    {
+                      backgroundColor:
+                        (requestData.ERPAbsenceTypeCompanyId == "" && "#fff") ||
+                        (requestData.ERPAbsenceTypeCompanyId != "" &&
+                          requestData.ERPAbsenceTypeCompanyId?.AllowHours == 0)
+                          ? "#edebeb"
+                          : "#fff",
+                    },
+                  ]}
+                  onPress={() => setShowToTimePicker(true)}
+                  disabled={
+                    requestData.ERPAbsenceTypeCompanyId == "" ||
+                    (requestData.ERPAbsenceTypeCompanyId &&
+                      requestData.ERPAbsenceTypeCompanyId?.AllowHours == 0)
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                    {/* {requestData.name} */}
+                    {requestData.ToTime != "" ? requestData.ToTime : "Сонгох"}
                   </Text>
                   <Icon
                     name="keyboard-arrow-down"
@@ -235,16 +322,27 @@ const SendRequestScreen = (props) => {
                     size={30}
                   />
                 </TouchableOpacity>
+                <DateTimePickerModal
+                  isVisible={showToTimePicker}
+                  mode="time"
+                  onConfirm={(time) => handleConfirm("time", "ToTime", time)}
+                  onCancel={() => setShowToTimePicker(false)}
+                />
               </View>
             </View>
-            {requestData.requestType &&
-            requestData.requestType?.AllowHalfDay ? (
+            {requestData.ERPAbsenceTypeCompanyId &&
+            requestData.ERPAbsenceTypeCompanyId?.AllowHalfDay ? (
               <View style={styles.touchableSelectContainer}>
                 <Text style={styles.title}>Эхлэх өдөр ажиллах хуваарь</Text>
                 <TouchableOpacity
                   style={styles.touchableSelect}
                   onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
+                    setLookupData(
+                      absenceTypes.parts,
+                      "Name",
+                      "ERPFromDatePartId",
+                      false
+                    )
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
@@ -258,14 +356,19 @@ const SendRequestScreen = (props) => {
                 </TouchableOpacity>
               </View>
             ) : null}
-            {requestData.requestType &&
-            requestData.requestType?.AllowHalfDay ? (
+            {requestData.ERPAbsenceTypeCompanyId &&
+            requestData.ERPAbsenceTypeCompanyId?.AllowHalfDay ? (
               <View style={styles.touchableSelectContainer}>
                 <Text style={styles.title}>Дуусах өдөр ажиллах хуваарь</Text>
                 <TouchableOpacity
                   style={styles.touchableSelect}
                   onPress={() =>
-                    setLookupData(state.last3Years, "name", "startDate", false)
+                    setLookupData(
+                      absenceTypes.parts,
+                      "Name",
+                      "ERPToDatePartId",
+                      false
+                    )
                   }
                 >
                   <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
@@ -279,7 +382,7 @@ const SendRequestScreen = (props) => {
                 </TouchableOpacity>
               </View>
             ) : null}
-            <View style={styles.touchableSelectContainer}>
+            {/* <View style={styles.touchableSelectContainer}>
               <Text style={styles.title}>Орлож ажиллах</Text>
               <TouchableOpacity
                 style={styles.touchableSelect}
@@ -288,7 +391,6 @@ const SendRequestScreen = (props) => {
                 }
               >
                 <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                  {/* {requestData.name} */}
                 </Text>
                 <Icon
                   name="keyboard-arrow-down"
@@ -296,7 +398,7 @@ const SendRequestScreen = (props) => {
                   size={30}
                 />
               </TouchableOpacity>
-            </View>
+            </View> */}
             <View style={styles.touchableSelectContainer}>
               <Text style={styles.title}>Тайлбар</Text>
               <TextInput
@@ -305,10 +407,10 @@ const SendRequestScreen = (props) => {
                 onChangeText={(text) =>
                   setRequestData((prevState) => ({
                     ...prevState,
-                    description: text,
+                    Comment: text,
                   }))
                 }
-                value={requestData.description}
+                value={requestData.Comment}
                 style={styles.description}
                 returnKeyType="done"
                 onBlur={() => {
@@ -371,10 +473,10 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     alignSelf: "flex-start",
     width: "100%",
-    marginTop: 10,
+    marginTop: 5,
   },
   description: {
-    height: 200,
+    height: 100,
     marginTop: 10,
     borderRadius: MAIN_BORDER_RADIUS,
     padding: 10,
