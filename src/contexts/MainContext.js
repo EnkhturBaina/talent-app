@@ -273,7 +273,6 @@ export const MainStore = (props) => {
             setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
             logout();
           } else {
-            console.log("ELSE");
             getEmployeeAttendanceList(last3Years[0]);
           }
           // setAttendanceList(response.data.Extra);

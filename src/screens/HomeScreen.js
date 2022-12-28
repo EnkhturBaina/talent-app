@@ -125,7 +125,7 @@ const HomeScreen = (props) => {
       },
     })
       .then((response) => {
-        // console.log("track Attendance ======>", response.data);
+        console.log("track Attendance ======>", response.data);
         if (response.data?.Type == 0) {
           type == "IN"
             ? // Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
