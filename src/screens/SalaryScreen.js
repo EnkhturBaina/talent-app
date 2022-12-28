@@ -159,10 +159,9 @@ const styles = StyleSheet.create({
   },
   name: {
     fontFamily: FONT_FAMILY_BOLD,
-    fontSize: 18,
   },
   date: {
     fontFamily: FONT_FAMILY_LIGHT,
-    fontSize: 18,
+    fontSize: 16,
   },
 });

@@ -163,8 +163,9 @@ const LoginScreen = (props) => {
                     // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
                     await AsyncStorage.setItem("use_bio", "no").then(
                       (value) => {
-                        state.setIsLoggedIn(true);
-                        state.setIsLoading(false);
+                        state.getUserDataLocalStorage();
+                        // state.setIsLoggedIn(true);
+                        // state.setIsLoading(false);
                       }
                     );
                   }

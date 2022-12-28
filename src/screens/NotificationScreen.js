@@ -56,7 +56,7 @@ const NotificationScreen = () => {
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
         <TouchableOpacity
-          style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
+          style={[styles.notifContainer, { borderLeftColor: MAIN_COLOR }]}
         >
           <View style={styles.firstRow}>
             <View style={styles.stack1}>
@@ -107,11 +107,10 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     alignSelf: "flex-start",
   },
-  taskContainer: {
+  notifContainer: {
     borderLeftWidth: 10,
     flexDirection: "column",
     flex: 1,
-    height: 80,
     marginTop: 10,
     marginHorizontal: 20,
     backgroundColor: "#d9d9d9",

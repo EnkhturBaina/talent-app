@@ -31,7 +31,7 @@ export default function ({
         alignItems: "center",
       }}
     >
-      <Image source={imageType} style={{ width: 150, height: 150 }} />
+      <Image source={imageType} style={{ width: 100, height: 100 }} />
       <Text
         style={{
           fontFamily: FONT_FAMILY_BOLD,

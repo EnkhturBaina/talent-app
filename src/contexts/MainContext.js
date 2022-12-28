@@ -33,7 +33,15 @@ export const MainStore = (props) => {
   const [expoPushToken, setExpoPushToken] = useState(""); // EXPO PUSH NOTIFICATION TOKEN Хадгалах
   const [notification, setNotification] = useState(false); // Ирсэн Notification -ы мэдээлэл (OBJECT)
 
+  const [attendanceList, setAttendanceList] = useState(""); //Ажилтны ирцийн мэдээлэл
+  const [loadingAttendanceList, setLoadingAttendanceList] = useState(true); //Ажилтны ирцийн мэдээлэл татаж байхад LOADER харуулах
+
   const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
+
+  const [registeredInTime, setRegisteredInTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажилдаа ирсэн цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
+  const [registeredOutTime, setRegisteredOutTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажлаас явсан цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
+
+  var date = new Date();
 
   const notificationListener = useRef();
   const responseListener = useRef();
@@ -93,31 +101,10 @@ export const MainStore = (props) => {
     });
     setLast3Years(yearsWithMonths);
   };
-  async function sendPushNotification(expoPushToken) {
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "Original Title",
-      body: "And here is the body!",
-      data: { aaa: "goes here" },
-      // badge: 7, //App -н Icon дээр харагдах тоо (BADGE)
-    };
-
-    // https://expo.dev/notifications
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Accept-encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(message),
-    });
-  }
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) => {
-      console.log("TOKEN", token);
+      // console.log("TOKEN", token);
       setExpoPushToken(token);
     }); //TOKEN хадгалах
 
@@ -155,6 +142,58 @@ export const MainStore = (props) => {
   useEffect(() => {
     getCustomFont();
   }, []);
+
+  // Хэрэглэгчийн ирцын мэдээлэл авах
+  const getEmployeeAttendanceList = async (selected_date) => {
+    setLoadingAttendanceList(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/attendance/list`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        ERPEmployeeId: userId,
+        StartRange: selected_date.id + "-01",
+        EndRange:
+          selected_date.id +
+          "-" +
+          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      },
+    })
+      .then((response) => {
+        // console.log("getEmployee AttendanceList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          response.data.Extra?.map((el) => {
+            if (new Date().toISOString().slice(0, 10) == el.Date) {
+              // Ажилдаа ирсэн цаг тооцоолж харуулах
+              setRegisteredInTime(
+                el.TimeIn != null && el.TimeIn?.substr(11, 5)
+              );
+              // Ажлаас явсан цаг тооцоолж харуулах
+              setRegisteredOutTime(
+                el.TimeOut != null && el.TimeOut?.substr(11, 5)
+              );
+            }
+          });
+          setIsLoggedIn(true);
+          setAttendanceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setIsLoading(false);
+        setLoadingAttendanceList(false);
+      })
+      .catch(function (error) {
+        if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          setIsLoading(false);
+          logout();
+        }
+      });
+  };
 
   //Апп ажиллахад утасны local storage -с мэдээлэл шалгах
   const checkUserData = async () => {
@@ -234,8 +273,8 @@ export const MainStore = (props) => {
             setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
             logout();
           } else {
-            setIsLoggedIn(true);
-            setIsLoading(false);
+            console.log("ELSE");
+            getEmployeeAttendanceList(last3Years[0]);
           }
           // setAttendanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {
@@ -280,9 +319,15 @@ export const MainStore = (props) => {
         loginByBiometric,
         getUserDataLocalStorage,
         expoPushToken,
-        sendPushNotification,
         location,
         setLocation,
+        getEmployeeAttendanceList,
+        attendanceList,
+        loadingAttendanceList,
+        registeredInTime,
+        registeredOutTime,
+        setRegisteredInTime,
+        setRegisteredOutTime,
       }}
     >
       {props.children}

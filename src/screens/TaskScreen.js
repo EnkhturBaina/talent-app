@@ -111,7 +111,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 10,
     flexDirection: "column",
     flex: 1,
-    height: 80,
     marginTop: 10,
     marginHorizontal: 20,
     backgroundColor: "#d9d9d9",
@@ -130,6 +129,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   secondRow: {
+    flex: 1,
     marginTop: 10,
     justifyContent: "center",
   },

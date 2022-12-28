@@ -135,13 +135,13 @@ const RequestListScreen = (props) => {
         </TouchableOpacity>
       </View>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={{
+          paddingBottom: Platform.OS === "android" ? 80 : 50,
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
-            colors={"#fff"}
             tintColor={"#fff"}
           />
         }

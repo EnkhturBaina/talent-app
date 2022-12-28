@@ -31,15 +31,20 @@ import {
 import HeaderUser from "../components/HeaderUser";
 import axios from "axios";
 import MainContext from "../contexts/MainContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomDialog from "../components/CustomDialog";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
-  const [errorMsg, setErrorMsg] = useState(null);
   const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
   const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
   const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
   const [time, setTime] = useState(); //Live Цаг
   var date = new Date();
+
+  const [visibleDialog, setVisibleDialog] = useState(false);
+  const [dialogType, setDialogType] = useState("success");
+  const [dialogText, setDialogText] = useState("");
 
   const general_style = require("../style");
 
@@ -81,14 +86,14 @@ const HomeScreen = (props) => {
     if (state.userData?.attendance_type?.details) {
       state.userData?.attendance_type?.details.map((el) => {
         if (el.WeekDay == date.getDay()) {
-          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "00:00");
-          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "00:00");
+          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "--:--");
+          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "--:--");
         }
       });
     } else {
-      //Ажиллахгүй өдөр 00:00 харуулах
-      setInTime("00:00");
-      setOutTime("00:00");
+      //Ажиллахгүй өдөр --:-- харуулах
+      setInTime("--:--");
+      setOutTime("--:--");
     }
   }, []);
 
@@ -115,16 +120,29 @@ const HomeScreen = (props) => {
         Type: type,
         Break: "",
         MobileUUID: state.uuid,
-        latitude: state.location.latitude,
-        longitude: state.location.longitude,
+        latitude: state.location?.coords?.latitude,
+        longitude: state.location?.coords?.longitude,
       },
     })
       .then((response) => {
-        // console.log("track Attendance ======>", response.data.Extra);
+        // console.log("track Attendance ======>", response.data);
         if (response.data?.Type == 0) {
-          // setAttendanceList(response.data.Extra);
+          type == "IN"
+            ? // Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
+              state.setRegisteredInTime(
+                response.data?.Extra?.TimeIn?.substr(11, 5)
+              )
+            : // Ажлаас явсан цаг бүртгүүлэх үед харуулах
+              state.setRegisteredOutTime(
+                response.data?.Extra?.TimeOut?.substr(11, 5)
+              );
+          setDialogType("success");
+          setVisibleDialog(true);
+          setDialogText(response.data.Msg);
         } else if (response.data?.Type == 1) {
-          console.log("WARNING", response.data.Msg);
+          setDialogType("success");
+          setVisibleDialog(true);
+          setDialogText(response.data.Msg);
         } else if (response.data?.Type == 2) {
         }
       })
@@ -137,7 +155,6 @@ const HomeScreen = (props) => {
         }
       });
   };
-
   return (
     <SafeAreaView
       style={{
@@ -170,7 +187,9 @@ const HomeScreen = (props) => {
             </View>
             <View style={styles.registerContainer}>
               <Image source={come} style={styles.inOutClockImg} />
-              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>{inTime}</Text>
+              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                {state.registeredInTime ? state.registeredInTime : "--:--"}
+              </Text>
               <Button
                 containerStyle={{ width: "40%" }}
                 buttonStyle={{
@@ -182,7 +201,7 @@ const HomeScreen = (props) => {
                   fontSize: 14,
                   fontFamily: FONT_FAMILY_BOLD,
                 }}
-                onPress={() => console.log("COME")}
+                onPress={() => trackAttendance("IN")}
               />
               <TouchableOpacity
                 onPress={() => props.navigation.navigate("MapScreen")}
@@ -197,7 +216,9 @@ const HomeScreen = (props) => {
             </View>
             <View style={styles.registerContainer}>
               <Image source={out} style={styles.inOutClockImg} />
-              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>{outTime}</Text>
+              <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
+                {state.registeredOutTime ? state.registeredOutTime : "--:--"}
+              </Text>
               <Button
                 containerStyle={{ width: "40%" }}
                 buttonStyle={{
@@ -209,7 +230,7 @@ const HomeScreen = (props) => {
                   fontSize: 14,
                   fontFamily: FONT_FAMILY_BOLD,
                 }}
-                onPress={() => console.log("OUT")}
+                onPress={() => trackAttendance("OUT")}
               />
               <TouchableOpacity
                 onPress={() => props.navigation.navigate("MapScreen")}
@@ -241,6 +262,19 @@ const HomeScreen = (props) => {
           </View>
         </View>
       </ScrollView>
+      <CustomDialog
+        visible={visibleDialog}
+        confirmFunction={() => {
+          setVisibleDialog(false);
+        }}
+        declineFunction={() => {
+          setVisibleDialog(false);
+        }}
+        text={dialogText}
+        confirmBtnText="Хаах"
+        DeclineBtnText=""
+        type={dialogType}
+      />
     </SafeAreaView>
   );
 };

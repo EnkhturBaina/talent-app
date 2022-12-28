@@ -31,6 +31,7 @@ import pin from "../../assets/pin.png";
 import axios from "axios";
 import MainContext from "../contexts/MainContext";
 import Loader from "../components/Loader";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const EmployeesScreen = (props) => {
   const state = useContext(MainContext);

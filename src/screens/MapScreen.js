@@ -15,6 +15,7 @@ import {
   MAIN_COLOR,
   MAIN_COLOR_GREEN,
   MAIN_COLOR_RED,
+  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
@@ -22,6 +23,9 @@ import MapView, { Marker, Circle } from "react-native-maps";
 import come from "../../assets/homeScreen/come.png";
 import out from "../../assets/homeScreen/out.png";
 import { Icon } from "@rneui/base";
+import axios from "axios";
+import CustomDialog from "../components/CustomDialog";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MapScreen = () => {
   const state = useContext(MainContext);
@@ -32,6 +36,60 @@ const MapScreen = () => {
     latitudeDelta: 0.0121,
     longitudeDelta: 0.0121,
   });
+
+  const [visibleDialog, setVisibleDialog] = useState(false);
+  const [dialogType, setDialogType] = useState("success");
+  const [dialogText, setDialogText] = useState("");
+
+  const trackAttendance = async (type) => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/attendance/track`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: state.userId,
+        GMCompanyId: state.companyId,
+        Type: type,
+        Break: "",
+        MobileUUID: state.uuid,
+        latitude: state.location?.coords?.latitude,
+        longitude: state.location?.coords?.longitude,
+      },
+    })
+      .then((response) => {
+        // console.log("track Attendance ======>", response.data);
+        if (response.data?.Type == 0) {
+          type == "IN"
+            ? // Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
+              state.setRegisteredInTime(
+                response.data?.Extra?.TimeIn?.substr(11, 5)
+              )
+            : // Ажлаас явсан цаг бүртгүүлэх үед харуулах
+              state.setRegisteredOutTime(
+                response.data?.Extra?.TimeOut?.substr(11, 5)
+              );
+          setDialogType("success");
+          setVisibleDialog(true);
+          setDialogText(response.data.Msg);
+        } else if (response.data?.Type == 1) {
+          setDialogType("success");
+          setVisibleDialog(true);
+          setDialogText(response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+      })
+      .catch(function (error) {
+        if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+
   return (
     <SafeAreaView
       style={{
@@ -128,7 +186,7 @@ const MapScreen = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => console.log("COME")}
+          onPress={() => trackAttendance("IN")}
           style={styles.buttonContainer}
         >
           <Image source={come} style={styles.inOutClockImg} />
@@ -137,7 +195,7 @@ const MapScreen = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => console.log("OUT")}
+          onPress={() => trackAttendance("OUT")}
           style={styles.buttonContainer}
         >
           <Image source={out} style={styles.inOutClockImg} />
@@ -146,6 +204,19 @@ const MapScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
+      <CustomDialog
+        visible={visibleDialog}
+        confirmFunction={() => {
+          setVisibleDialog(false);
+        }}
+        declineFunction={() => {
+          setVisibleDialog(false);
+        }}
+        text={dialogText}
+        confirmBtnText="Хаах"
+        DeclineBtnText=""
+        type={dialogType}
+      />
     </SafeAreaView>
   );
 };

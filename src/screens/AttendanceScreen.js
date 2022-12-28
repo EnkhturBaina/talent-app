@@ -21,24 +21,19 @@ import {
   MAIN_COLOR_GRAY,
   MAIN_COLOR_GREEN,
   MAIN_COLOR_RED,
-  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 import Accordion from "react-native-collapsible/Accordion";
-import axios from "axios";
 import Loader from "../components/Loader";
 
 const AttendanceScreen = (props) => {
   const state = useContext(MainContext);
-  var date = new Date();
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
-  const [attendanceList, setAttendanceList] = useState(""); //Ажилтны ирцийн мэдээлэл
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
   const [activeSections, setActiveSections] = useState([]);
-  const [loadingAttendanceList, setLoadingAttendanceList] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const setLookupData = (data, display) => {
@@ -53,46 +48,9 @@ const AttendanceScreen = (props) => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getEmployeeAttendanceList();
+    state.getEmployeeAttendanceList(selectedDate);
     wait(1000).then(() => setRefreshing(false));
   }, []);
-
-  const getEmployeeAttendanceList = async () => {
-    setLoadingAttendanceList(true);
-    await axios({
-      method: "post",
-      url: `${SERVER_URL}/mobile/attendance/list`,
-      headers: {
-        Authorization: `Bearer ${state.token}`,
-      },
-      data: {
-        ERPEmployeeId: state.userId,
-        StartRange: selectedDate.id + "-01",
-        EndRange:
-          selectedDate.id +
-          "-" +
-          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
-      },
-    })
-      .then((response) => {
-        // console.log("getEmployee AttendanceList======>", response.data.Extra);
-        if (response.data?.Type == 0) {
-          setAttendanceList(response.data.Extra);
-        } else if (response.data?.Type == 1) {
-          console.log("WARNING", response.data.Msg);
-        } else if (response.data?.Type == 2) {
-        }
-        setLoadingAttendanceList(false);
-      })
-      .catch(function (error) {
-        if (error.response?.status == "401") {
-          AsyncStorage.removeItem("use_bio");
-          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
-          state.setIsLoading(false);
-          state.logout();
-        }
-      });
-  };
 
   const renderHeader = (section, index, isActive) => {
     return (
@@ -163,7 +121,7 @@ const AttendanceScreen = (props) => {
   };
 
   useEffect(() => {
-    getEmployeeAttendanceList();
+    state.getEmployeeAttendanceList(selectedDate);
   }, [selectedDate]);
 
   return (
@@ -201,20 +159,19 @@ const AttendanceScreen = (props) => {
             refreshing={refreshing}
             onRefresh={onRefresh}
             // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
-            colors={"#fff"}
             tintColor={"#fff"}
           />
         }
       >
-        {loadingAttendanceList ? (
+        {state.loadingAttendanceList ? (
           <Loader />
-        ) : !loadingAttendanceList && attendanceList == "" ? (
+        ) : !state.loadingAttendanceList && state.attendanceList == "" ? (
           <Text style={styles.emptyText}>
             Ажилтны ирцийн мэдээлэл олдсонгүй
           </Text>
         ) : (
           <Accordion
-            sections={attendanceList}
+            sections={state.attendanceList}
             activeSections={activeSections}
             // renderSectionTitle={renderSectionTitle}
             renderHeader={renderHeader}
