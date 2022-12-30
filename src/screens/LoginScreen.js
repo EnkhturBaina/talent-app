@@ -108,6 +108,10 @@ const LoginScreen = (props) => {
       });
   };
   const login = async () => {
+    console.log(
+      "state.uuid ? state.uuid : tempUUID",
+      state.uuid ? state.uuid : tempUUID
+    );
     const regex_email = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (state.email == "") {
       onToggleSnackBar("И-мэйл хаягаа оруулна уу.");

@@ -52,7 +52,7 @@ const MapScreen = () => {
         ERPEmployeeId: state.userId,
         GMCompanyId: state.companyId,
         Type: type,
-        Break: "",
+        Break: "01:00:00",
         MobileUUID: state.uuid,
         latitude: state.location?.coords?.latitude,
         longitude: state.location?.coords?.longitude,

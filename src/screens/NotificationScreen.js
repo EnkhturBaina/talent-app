@@ -6,35 +6,88 @@ import {
   NativeModules,
   Platform,
   TouchableOpacity,
-  ScrollView,
+  RefreshControl,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
 import {
   FONT_FAMILY_BOLD,
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
-import { Icon } from "@rneui/base";
-import BottomSheet from "../components/BottomSheet";
+import { Button } from "@rneui/themed";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loader from "../components/Loader";
+import { SwipeListView } from "react-native-swipe-list-view";
 
 const NotificationScreen = () => {
   const state = useContext(MainContext);
-  var date = new Date();
-  const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
-  const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
-  const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
-  const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
+  const [refreshing, setRefreshing] = useState(false);
 
-  const setLookupData = (data, display) => {
-    setData(data); //Lookup -д харагдах дата
-    setDisplayName(display); //Lookup -д харагдах датаны текст талбар
-    setUselessParam(!uselessParam);
+  const [notifList, setNotifList] = useState(""); // Мэдэгдлүүд
+  const [loadingNotifList, setLoadingNotifList] = useState(true);
+
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
   };
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getNotifList();
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
+
+  const getNotifList = async () => {
+    setLoadingNotifList(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/notification/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMUserId: state.userId,
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("get NotifList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setNotifList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingNotifList(false);
+      })
+      .catch(function (error) {
+        if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+  useEffect(() => {
+    getNotifList();
+  }, []);
+
+  const renderHiddenItem = (data, rowMap) => (
+    <View style={styles.rowBack}>
+      <TouchableOpacity
+        style={[styles.backRightBtn, styles.backRightBtnRight]}
+        onPress={() => console.log("DELETE")}
+      >
+        <Text style={styles.backTextWhite}>READ</Text>
+      </TouchableOpacity>
+    </View>
+  );
   return (
     <SafeAreaView
       style={{
@@ -44,43 +97,63 @@ const NotificationScreen = () => {
     >
       <HeaderUser />
       <View style={styles.headerActions}>
-        <TouchableOpacity
-          style={styles.yearMonthPicker}
-          onPress={() => setLookupData(state.last3Years, "name")}
-        >
-          <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {selectedDate.name}
-          </Text>
-          <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
-        </TouchableOpacity>
+        <Button
+          containerStyle={{}}
+          buttonStyle={{
+            backgroundColor: MAIN_COLOR,
+            borderRadius: MAIN_BORDER_RADIUS,
+            height: 40,
+          }}
+          title="Бүгдийг уншсан"
+          titleStyle={{
+            fontSize: 16,
+            fontFamily: FONT_FAMILY_BOLD,
+          }}
+          onPress={() => console.log("ALL READ")}
+        />
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
-        <TouchableOpacity
-          style={[styles.notifContainer, { borderLeftColor: MAIN_COLOR }]}
-        >
-          <View style={styles.firstRow}>
-            <View style={styles.stack1}>
-              <Text style={styles.name}>Таны хүсэлт зөвшөөрөгдсөн</Text>
-            </View>
-            <View style={styles.stack2}>
-              <Text style={styles.date}>2022-12-09 19:00</Text>
-            </View>
-          </View>
-          <View style={styles.secondRow}>
-            <Text numberOfLines={2} style={styles.description}>
-              Таны илгээсэн илүү цагийн хүсэлт зөвшөөрөгдсөн
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
-      <BottomSheet
-        bodyText={data}
-        dragDown={true}
-        backClick={true}
-        displayName={displayName}
-        handle={uselessParam}
-        action={(e) => setSelectedDate(e)}
-      />
+      {loadingNotifList ? (
+        <Loader />
+      ) : !loadingNotifList && notifList == "" ? (
+        <Text style={styles.emptyText}>Мэдэгдэл олдсонгүй</Text>
+      ) : (
+        <SwipeListView
+          data={notifList}
+          closeOnRowOpen
+          closeOnRowPress
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+          renderItem={(el, rowMap) => (
+            <TouchableOpacity
+              style={[styles.notifContainer, { borderLeftColor: MAIN_COLOR }]}
+              key={rowMap}
+              activeOpacity={1}
+            >
+              <View style={styles.firstRow}>
+                <View style={styles.stack1}>
+                  <Text style={styles.name}>{el.item.Title}</Text>
+                </View>
+                <View style={styles.stack2}>
+                  <Text style={styles.date}>{el.item.created_at}</Text>
+                </View>
+              </View>
+              <View style={styles.secondRow}>
+                <Text numberOfLines={2} style={styles.description}>
+                  {el.item.Content}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          renderHiddenItem={renderHiddenItem}
+          disableRightSwipe
+          rightOpenValue={-75}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -93,19 +166,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     marginHorizontal: 20,
     alignItems: "center",
-  },
-  yearMonthPicker: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderColor: MAIN_COLOR,
-    borderWidth: 1,
-    borderRadius: MAIN_BORDER_RADIUS,
-    height: 40,
-    alignItems: "center",
-    paddingVertical: 5,
-    paddingLeft: 10,
-    paddingRight: 5,
-    alignSelf: "flex-start",
   },
   notifContainer: {
     borderLeftWidth: 10,
@@ -137,8 +197,31 @@ const styles = StyleSheet.create({
   },
   date: {
     fontFamily: FONT_FAMILY_LIGHT,
+    fontSize: 12,
   },
   description: {
     fontFamily: FONT_FAMILY_LIGHT,
+  },
+  rowBack: {
+    alignItems: "center",
+    backgroundColor: "#DDD",
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 15,
+    marginTop: 10,
+    marginHorizontal: 20,
+  },
+  backRightBtn: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    position: "absolute",
+    top: 0,
+    width: 75,
+  },
+  backRightBtnRight: {
+    backgroundColor: "red",
+    right: 0,
   },
 });

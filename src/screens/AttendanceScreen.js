@@ -152,7 +152,7 @@ const AttendanceScreen = (props) => {
       </View>
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: 60,
+          paddingBottom: Platform.OS === "ios" ? 50 : 70,
         }}
         refreshControl={
           <RefreshControl
