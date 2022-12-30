@@ -26,6 +26,7 @@ import MainContext from "../contexts/MainContext";
 const { StatusBarManager } = NativeModules;
 import Accordion from "react-native-collapsible/Accordion";
 import Loader from "../components/Loader";
+import Empty from "../components/Empty";
 
 const AttendanceScreen = (props) => {
   const state = useContext(MainContext);
@@ -48,7 +49,7 @@ const AttendanceScreen = (props) => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    state.getEmployeeAttendanceList(selectedDate);
+    state.getEmployeeAttendanceList(selectedDate, state.token);
     wait(1000).then(() => setRefreshing(false));
   }, []);
 
@@ -121,7 +122,7 @@ const AttendanceScreen = (props) => {
   };
 
   useEffect(() => {
-    state.getEmployeeAttendanceList(selectedDate);
+    state.getEmployeeAttendanceList(selectedDate, state.token);
   }, [selectedDate]);
 
   return (
@@ -150,26 +151,25 @@ const AttendanceScreen = (props) => {
         <Text style={styles.headerTitleBold}>Хоцорсон цаг</Text>
         <Text style={styles.headerTitleBold}>Төлөв</Text>
       </View>
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: Platform.OS === "ios" ? 50 : 70,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
-            tintColor={"#fff"}
-          />
-        }
-      >
-        {state.loadingAttendanceList ? (
-          <Loader />
-        ) : !state.loadingAttendanceList && state.attendanceList == "" ? (
-          <Text style={styles.emptyText}>
-            Ажилтны ирцийн мэдээлэл олдсонгүй
-          </Text>
-        ) : (
+
+      {state.loadingAttendanceList ? (
+        <Loader />
+      ) : !state.loadingAttendanceList && state.attendanceList == "" ? (
+        <Empty text="Ажилтны ирцийн мэдээлэл олдсонгүй" />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: Platform.OS === "ios" ? 50 : 70,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              // colors={[MAIN_COLOR, MAIN_COLOR, MAIN_COLOR]}
+              tintColor={"#fff"}
+            />
+          }
+        >
           <Accordion
             sections={state.attendanceList}
             activeSections={activeSections}
@@ -179,8 +179,8 @@ const AttendanceScreen = (props) => {
             onChange={updateSections}
             underlayColor="transparent"
           />
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
       <BottomSheet
         bodyText={data}
         dragDown={true}
@@ -256,11 +256,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     alignItems: "center",
     backgroundColor: "#fff",
-  },
-  emptyText: {
-    fontFamily: FONT_FAMILY_BOLD,
-    textAlign: "center",
-    marginTop: 10,
   },
   headerSubTitle: {
     fontFamily: FONT_FAMILY_BOLD,

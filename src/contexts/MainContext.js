@@ -25,7 +25,7 @@ export const MainStore = (props) => {
   const [token, setToken] = useState(""); //Хэрэглэгчийн TOKEN
   const [userData, setUserData] = useState(""); //Хэрэглэгчийн мэдээлэл
   const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
-  const [last3Years, setLast3Years] = useState(true); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
+  const [last3Years, setLast3Years] = useState(""); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
   const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
   const [loginByBiometric, setLoginByBiometric] = useState(false); //Biometric тохиргоогоор нэвтрэх
   const [loginErrorMsg, setLoginErrorMsg] = useState(""); // Login хуудсанд харагдах алдааны MSG
@@ -144,55 +144,70 @@ export const MainStore = (props) => {
   }, []);
 
   // Хэрэглэгчийн ирцын мэдээлэл авах
-  const getEmployeeAttendanceList = async (selected_date) => {
-    setLoadingAttendanceList(true);
-    await axios({
-      method: "post",
-      url: `${SERVER_URL}/mobile/attendance/list`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      data: {
-        ERPEmployeeId: userId,
-        StartRange: selected_date.id + "-01",
-        EndRange:
-          selected_date.id +
-          "-" +
-          new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
-      },
-    })
-      .then((response) => {
-        // console.log("getEmployee AttendanceList======>", response.data.Extra);
-        if (response.data?.Type == 0) {
-          response.data.Extra?.map((el) => {
-            if (new Date().toISOString().slice(0, 10) == el.Date) {
-              // Ажилдаа ирсэн цаг тооцоолж харуулах
-              setRegisteredInTime(
-                el.TimeIn != null && el.TimeIn?.substr(11, 5)
-              );
-              // Ажлаас явсан цаг тооцоолж харуулах
-              setRegisteredOutTime(
-                el.TimeOut != null && el.TimeOut?.substr(11, 5)
-              );
-            }
-          });
-          setIsLoggedIn(true);
-          setAttendanceList(response.data.Extra);
-        } else if (response.data?.Type == 1) {
-          console.log("WARNING", response.data.Msg);
-        } else if (response.data?.Type == 2) {
-        }
-        setIsLoading(false);
-        setLoadingAttendanceList(false);
+  const getEmployeeAttendanceList = async (selected_date, local_token) => {
+    console.log("selected_date", selected_date);
+    console.log("local_token", local_token);
+    if (!selected_date) {
+      selected_date = {
+        id: date.getFullYear() + "-" + date.getMonth(),
+        name: date.getFullYear() + " - " + date.getMonth() + " сар",
+      };
+    }
+    try {
+      setLoadingAttendanceList(true);
+
+      await axios({
+        method: "post",
+        url: `${SERVER_URL}/mobile/attendance/list`,
+        headers: {
+          Authorization: `Bearer ${local_token}`,
+        },
+        data: {
+          ERPEmployeeId: userId,
+          StartRange: selected_date.id + "-01",
+          EndRange:
+            selected_date.id +
+            "-" +
+            new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+        },
       })
-      .catch(function (error) {
-        if (error.response?.status == "401") {
-          AsyncStorage.removeItem("use_bio");
-          setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
-          setIsLoading(false);
-          logout();
-        }
-      });
+        .then((response) => {
+          // console.log("getEmployee AttendanceList======>", response.data.Extra);
+          if (response.data?.Type == 0) {
+            response.data.Extra?.map((el) => {
+              if (new Date().toISOString().slice(0, 10) == el.Date) {
+                // Ажилдаа ирсэн цаг тооцоолж харуулах
+                setRegisteredInTime(
+                  el.TimeIn != null && el.TimeIn?.substr(11, 5)
+                );
+                // Ажлаас явсан цаг тооцоолж харуулах
+                setRegisteredOutTime(
+                  el.TimeOut != null && el.TimeOut?.substr(11, 5)
+                );
+              }
+            });
+            setAttendanceList(response.data.Extra);
+            setIsLoggedIn(true);
+            setIsLoading(false);
+          } else if (response.data?.Type == 1) {
+            console.log("WARNING", response.data.Msg);
+          } else if (response.data?.Type == 2) {
+          }
+          setLoadingAttendanceList(false);
+        })
+        .catch(function (error) {
+          console.log("ERR", error);
+          if (error.response?.status == "401") {
+            AsyncStorage.removeItem("use_bio");
+            setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+            setIsLoading(false);
+            logout();
+          }
+        });
+    } catch (e) {
+      // error reading value
+      console.log("error======>", e);
+    }
   };
 
   //Апп ажиллахад утасны local storage -с мэдээлэл шалгах
@@ -207,11 +222,11 @@ export const MainStore = (props) => {
             setIsUseBiometric(true);
             setLoginByBiometric(true);
           } else {
-            getUserDataLocalStorage();
+            getUserDataLocalStorage(uuid_value);
             setIsUseBiometric(false);
             setLoginByBiometric(false);
+            // setIsLoading(false);
           }
-          setIsLoading(false);
         });
       });
     } catch (e) {
@@ -221,8 +236,8 @@ export const MainStore = (props) => {
   };
 
   //Апп ажиллахад утасны local storage -с зөвхөн хэрэглэгчийн мэдээлэл авах
-  const getUserDataLocalStorage = async () => {
-    setIsLoading(true);
+  const getUserDataLocalStorage = async (uuid_value) => {
+    // setIsLoading(true);
     await AsyncStorage.getItem("user").then(async (user_value) => {
       // console.log("user_value VALUE ====>", user_value);
       if (user_value != null) {
@@ -234,7 +249,7 @@ export const MainStore = (props) => {
         setUserId(JSONValue.user?.id);
         setCompanyId(JSONValue.user?.GMCompanyId);
         setUserData(JSONValue.user);
-        getUserUUID(JSONValue.user?.PersonalEmail, JSONValue.token);
+
         // setIsLoggedIn(true);
         // setIsLoading(false);
       } else {
@@ -243,6 +258,11 @@ export const MainStore = (props) => {
       }
     });
   };
+
+  useEffect(() => {
+    getUserUUID(userData?.PersonalEmail, token, uuid);
+  }, [userData]);
+
   const logout = () => {
     setIsLoggedIn(false);
     setLoginErrorMsg("");
@@ -252,7 +272,7 @@ export const MainStore = (props) => {
   };
 
   // Тухайн хэрэглэгчийн утсанд хадгалагдсан UUID == DATABASE.UUID ижил байгаа эсэхийг шалгах
-  const getUserUUID = async (local_email, local_token) => {
+  const getUserUUID = async (local_email, local_token, uuid_value) => {
     await axios({
       method: "post",
       url: `${SERVER_URL}/mobile/token/list`,
@@ -266,14 +286,14 @@ export const MainStore = (props) => {
       .then((response) => {
         // console.log("get UserUUID ======>", response.data.Extra);
         if (response.data?.Type == 0) {
-          if (response.data?.Extra?.MobileUUID != uuid) {
+          if (response.data?.Extra?.MobileUUID != uuid_value) {
             setIsLoggedIn(false);
             setIsLoading(false);
             AsyncStorage.removeItem("use_bio");
             setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
             logout();
           } else {
-            getEmployeeAttendanceList(last3Years[0]);
+            getEmployeeAttendanceList(last3Years[0], local_token);
           }
           // setAttendanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {

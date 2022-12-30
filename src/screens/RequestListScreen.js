@@ -26,6 +26,7 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
+import Empty from "../components/Empty";
 
 const RequestListScreen = (props) => {
   const state = useContext(MainContext);
@@ -62,7 +63,6 @@ const RequestListScreen = (props) => {
   }, [isFocused, selectedDate]);
 
   const getAbsences = async () => {
-    console.log("getAbsences");
     setLoadingAbsences(true);
     await axios({
       method: "post",
@@ -134,57 +134,54 @@ const RequestListScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <ScrollView
-        contentContainerStyle={{
-          paddingBottom: Platform.OS === "android" ? 80 : 50,
-        }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={"#fff"}
-          />
-        }
-      >
-        {loadingAbsences ? (
-          <Loader />
-        ) : !loadingAbsences && absenceList == "" ? (
-          <Text style={styles.emptyText}>
-            Ажилтны хүсэлтийн мэдээлэл олдсонгүй
-          </Text>
-        ) : (
-          <>
-            {absenceList.map((el, index) => {
-              return (
-                <View
-                  style={[
-                    styles.requestContainer,
-                    {
-                      borderColor: el.absence_type?.category?.CalendarColor,
-                    },
-                  ]}
-                  key={index}
-                >
-                  <View style={styles.stack1}>
-                    <Text style={styles.title} numberOfLines={2}>
-                      {el.TypeTitle}
-                    </Text>
-                    <View>
-                      <Text style={styles.comment}>Эхлэх: {el.FromDate}</Text>
-                      <Text style={styles.comment}>Дуусах: {el.ToDate}</Text>
-                    </View>
-                  </View>
-                  <View style={styles.stack2}>
-                    <Text numberOfLines={4} style={styles.comment}>
-                      {el.Comment}
-                    </Text>
+
+      {loadingAbsences ? (
+        <Loader />
+      ) : !loadingAbsences && absenceList == "" ? (
+        <Empty text="Ажилтны хүсэлтийн мэдээлэл олдсонгүй" />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: Platform.OS === "android" ? 80 : 50,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+        >
+          {absenceList.map((el, index) => {
+            return (
+              <View
+                style={[
+                  styles.requestContainer,
+                  {
+                    borderColor: el.absence_type?.category?.CalendarColor,
+                  },
+                ]}
+                key={index}
+              >
+                <View style={styles.stack1}>
+                  <Text style={styles.title} numberOfLines={2}>
+                    {el.TypeTitle}
+                  </Text>
+                  <View>
+                    <Text style={styles.comment}>Эхлэх: {el.FromDate}</Text>
+                    <Text style={styles.comment}>Дуусах: {el.ToDate}</Text>
                   </View>
                 </View>
-              );
-            })}
-          </>
-        )}
-      </ScrollView>
+                <View style={styles.stack2}>
+                  <Text numberOfLines={4} style={styles.comment}>
+                    {el.Comment}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
 
       <BottomSheet
         bodyText={data}
@@ -250,10 +247,5 @@ const styles = StyleSheet.create({
   comment: {
     fontFamily: FONT_FAMILY_LIGHT,
     fontSize: 12,
-  },
-  emptyText: {
-    fontFamily: FONT_FAMILY_BOLD,
-    textAlign: "center",
-    marginTop: 10,
   },
 });

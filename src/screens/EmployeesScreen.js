@@ -32,6 +32,7 @@ import axios from "axios";
 import MainContext from "../contexts/MainContext";
 import Loader from "../components/Loader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Empty from "../components/Empty";
 
 const EmployeesScreen = (props) => {
   const state = useContext(MainContext);
@@ -153,7 +154,7 @@ const EmployeesScreen = (props) => {
         {loadingEmployees ? (
           <Loader />
         ) : !filteredData && filteredData != "" ? (
-          <Text style={styles.emptyText}>Ажилтан олдсонгүй</Text>
+          <Empty text="Ажилтан олдсонгүй" />
         ) : (
           <View
             style={{ flex: 1, paddingBottom: Platform.OS === "ios" ? 50 : 70 }}

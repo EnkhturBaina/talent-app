@@ -24,6 +24,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loader from "../components/Loader";
 import { SwipeListView } from "react-native-swipe-list-view";
+import Empty from "../components/Empty";
 
 const NotificationScreen = () => {
   const state = useContext(MainContext);
@@ -74,6 +75,38 @@ const NotificationScreen = () => {
         }
       });
   };
+
+  const readAllNotif = async () => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/notification/read`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMUserId: state.userId,
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("get NotifList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        getNotifList();
+      })
+      .catch(function (error) {
+        if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+
   useEffect(() => {
     getNotifList();
   }, []);
@@ -109,13 +142,13 @@ const NotificationScreen = () => {
             fontSize: 16,
             fontFamily: FONT_FAMILY_BOLD,
           }}
-          onPress={() => console.log("ALL READ")}
+          onPress={() => (notifList != "" ? readAllNotif() : null)}
         />
       </View>
       {loadingNotifList ? (
         <Loader />
       ) : !loadingNotifList && notifList == "" ? (
-        <Text style={styles.emptyText}>Мэдэгдэл олдсонгүй</Text>
+        <Empty text="Мэдэгдэл олдсонгүй" />
       ) : (
         <SwipeListView
           data={notifList}
