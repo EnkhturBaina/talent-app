@@ -7,7 +7,6 @@ import { Icon } from "@rneui/base";
 import MainContext from "../contexts/MainContext";
 
 import LoginScreen from "../screens/LoginScreen";
-import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import NewsScreen from "../screens/NewsScreen";
@@ -44,26 +43,6 @@ const LoginStackNavigator = (props) => {
           headerShown: false,
           headerTitleStyle: {},
           headerLeft: () => <></>,
-        }}
-      />
-      <Stack.Screen
-        name="ResetPassword"
-        component={ResetPasswordScreen}
-        options={{
-          title: "Нууц үг сэргээх",
-          headerTitleStyle: {},
-          // headerLeft: () => (
-          //   <TouchableOpacity
-          //     style={styles.headerLeftContainer}
-          //     onPress={() => {
-          //       // props.navigation.goBack();
-          //       props.navigation.navigate("LoginTab");
-          //     }}
-          //   >
-          //     {/* <Icon type="feather" name="arrow-left" /> */}
-          //     <Text>BACK</Text>
-          //   </TouchableOpacity>
-          // ),
         }}
       />
       <Stack.Screen

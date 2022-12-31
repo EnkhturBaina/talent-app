@@ -37,6 +37,8 @@ const LoginScreen = (props) => {
   const [visibleSnack, setVisibleSnack] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState("");
 
+  const regex_email = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+
   //Snacbkbar харуулах
   const onToggleSnackBar = (msg) => {
     setVisibleSnack(!visibleSnack);
@@ -107,12 +109,44 @@ const LoginScreen = (props) => {
         console.log("resetUUID error=====>", error);
       });
   };
+
+  const resetPassword = async () => {
+    if (state.email == "") {
+      onToggleSnackBar("И-мэйл хаягаа оруулна уу.");
+    } else if (!regex_email.test(state.email)) {
+      onToggleSnackBar("И-мэйл хаягаа зөв оруулна уу.");
+    } else {
+      await axios({
+        method: "post",
+        url: `${SERVER_URL}/send/recovery`,
+        headers: {
+          Authorization: `Bearer ${state.token}`,
+        },
+        data: {
+          email: state.email,
+        },
+      })
+        .then(async (response) => {
+          console.log("resetUUID =====>", response.data);
+          if (response.data?.Type == 0) {
+            onToggleSnackBar(response.data.Msg);
+            state.setLoginErrorMsg("");
+          } else if (response.data?.Type == 1) {
+            state.setLoginErrorMsg(response.data.Msg);
+          } else if (response.data?.Type == 2) {
+            state.setLoginErrorMsg(response.data.Msg);
+          }
+        })
+        .catch(function (error) {
+          console.log("resetUUID error=====>", error);
+        });
+    }
+  };
   const login = async () => {
     console.log(
       "state.uuid ? state.uuid : tempUUID",
       state.uuid ? state.uuid : tempUUID
     );
-    const regex_email = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (state.email == "") {
       onToggleSnackBar("И-мэйл хаягаа оруулна уу.");
     } else if (!regex_email.test(state.email)) {
@@ -315,9 +349,7 @@ const LoginScreen = (props) => {
             checkedColor={MAIN_COLOR}
             uncheckedColor={MAIN_COLOR}
           />
-          <TouchableOpacity
-            onPress={() => props.navigation.navigate("ResetPassword")}
-          >
+          <TouchableOpacity onPress={() => resetPassword()}>
             <Text
               style={{
                 textDecorationLine: "underline",

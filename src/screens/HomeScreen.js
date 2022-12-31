@@ -86,14 +86,14 @@ const HomeScreen = (props) => {
     if (state.userData?.attendance_type?.details) {
       state.userData?.attendance_type?.details.map((el) => {
         if (el.WeekDay == date.getDay()) {
-          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "--:--");
-          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "--:--");
+          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "00:00");
+          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "00:00");
         }
       });
     } else {
-      //Ажиллахгүй өдөр --:-- харуулах
-      setInTime("--:--");
-      setOutTime("--:--");
+      //Ажиллахгүй өдөр 00:00 харуулах
+      setInTime("00:00");
+      setOutTime("00:00");
     }
   }, []);
 
@@ -188,7 +188,7 @@ const HomeScreen = (props) => {
             <View style={styles.registerContainer}>
               <Image source={come} style={styles.inOutClockImg} />
               <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                {state.registeredInTime ? state.registeredInTime : "--:--"}
+                {state.registeredInTime ? state.registeredInTime : "00:00"}
               </Text>
               <Button
                 containerStyle={{ width: "40%" }}
@@ -217,7 +217,7 @@ const HomeScreen = (props) => {
             <View style={styles.registerContainer}>
               <Image source={out} style={styles.inOutClockImg} />
               <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-                {state.registeredOutTime ? state.registeredOutTime : "--:--"}
+                {state.registeredOutTime ? state.registeredOutTime : "00:00"}
               </Text>
               <Button
                 containerStyle={{ width: "40%" }}
