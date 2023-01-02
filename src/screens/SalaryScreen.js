@@ -17,9 +17,13 @@ import {
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 import MainContext from "../contexts/MainContext";
+import axios from "axios";
 const { StatusBarManager } = NativeModules;
+import { useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SalaryScreen = (props) => {
   const state = useContext(MainContext);
@@ -29,13 +33,55 @@ const SalaryScreen = (props) => {
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
 
+  const [balanceList, setBalanceList] = useState("");
+  const [loadingBalance, setLoadingBalance] = useState(true);
+
+  //Screen LOAD хийхэд дахин RENDER хийх
+  const isFocused = useIsFocused();
+
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
     setDisplayName(display); //Lookup -д харагдах датаны текст талбар
     setUselessParam(!uselessParam);
   };
 
-  useEffect(() => {}, []);
+  const getBalance = async () => {
+    setLoadingBalance(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/erp/attendance/balance`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        StartDate: selectedDate.id + "-01",
+        ERPEmployeeId: state.userId,
+        Type: "minutes",
+      },
+    })
+      .then((response) => {
+        console.log("get Balance======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setBalanceList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingBalance(false);
+      })
+      .catch(function (error) {
+        if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+
+  useEffect(() => {
+    getBalance();
+  }, [isFocused, selectedDate]);
 
   return (
     <SafeAreaView

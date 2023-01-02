@@ -67,39 +67,46 @@ export const MainStore = (props) => {
 
   const generateLast3Years = () => {
     // Сүүлийн 3 жилийг сартай GENERATE хийх
-    var monthName = new Array(
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12"
-    );
+    // var monthName = new Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+    // var max = new Date().getFullYear();
+    // var min = max - 2;
+    // var years = [];
+    // var yearsWithMonths = [];
+    // var d = new Date();
+
+    // for (var i = max; i >= min; i--) {
+    //   years.push(i);
+    // }
+    // years.map((el) => {
+    //   for (var i = 0; i <= 11; i++) {
+    //     console.log("monthName[d.getMonth()]", monthName[d.getMonth()]);
+    //     yearsWithMonths.push({
+    //       id: el + "-" + monthName[d.getMonth()],
+    //       name: el + " - " + monthName[d.getMonth()] + " сар",
+    //     });
+    //     d.setMonth(d.getMonth() - 1);
+    //   }
+    // });
+    // setLast3Years(yearsWithMonths);
     var max = new Date().getFullYear();
     var min = max - 2;
-    var years = [];
-    var yearsWithMonths = [];
-    var d = new Date();
+    var date = `${min.getFullYear()}-${max.getMonth()}`;
+    var result = [];
 
-    for (var i = max; i >= min; i--) {
-      years.push(i);
+    //set both start and end date to first date of the month
+    const end_date = new Date(date.replace(" ", " ,1 "));
+    const start_date = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    );
+
+    while (end_date <= start_date) {
+      // result.push(start_date.toLocaleString('en-CA', { month: '2-digit' , year: 'numeric'}));
+      console.log(start_date.getFullYear());
+      console.log(start_date.getMonth() + 1);
+      start_date.setMonth(start_date.getMonth() - 1);
     }
-    years.map((el) => {
-      for (var i = 0; i <= 11; i++) {
-        yearsWithMonths.push({
-          id: el + "-" + monthName[d.getMonth()],
-          name: el + " - " + monthName[d.getMonth()] + " сар",
-        });
-        d.setMonth(d.getMonth() - 1);
-      }
-    });
-    setLast3Years(yearsWithMonths);
   };
 
   useEffect(() => {
