@@ -44,6 +44,39 @@ const EmployeesScreen = (props) => {
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [favList, setFavList] = useState([]);
 
+  // Утасны STORAGE -с PIN хийгдсэн ажилчдыг авах
+  const getFavListUsers = async () => {
+    await AsyncStorage.getItem("fav_list").then((fav_list) => {
+      setFavList(JSON.parse(fav_list));
+    });
+  };
+
+  // PIN state -д ажилтан нэмэх, хасах
+  const addRemoveUserFaveList = async () => {
+    if (favList == "") {
+      setFavList((arr) => [...arr, selectedEmployee]);
+    } else {
+      var index = favList.indexOf(selectedEmployee);
+      if (index !== -1) {
+        const reducedArr = [...favList];
+        reducedArr?.splice(index, 1);
+        setFavList(reducedArr);
+      } else {
+        setFavList((arr) => [...arr, selectedEmployee]);
+      }
+    }
+  };
+
+  // Утасны STORAGE -д PIN ажилчидыг state -ээс update хийх
+  const setLocalStorageFavList = async () => {
+    await AsyncStorage.setItem("fav_list", JSON.stringify(favList));
+  };
+
+  useEffect(() => {
+    // PIN ажилчидыг state хоосон үед ажиллах
+    favList != "" && setLocalStorageFavList();
+  }, [favList]);
+
   const onChangeSearch = (query) => {
     setSearchVal(query);
     let newData = employees.filter((el) => {
@@ -90,6 +123,7 @@ const EmployeesScreen = (props) => {
   };
 
   useEffect(() => {
+    getFavListUsers();
     getCompanyEmployees();
   }, []);
 
@@ -137,7 +171,10 @@ const EmployeesScreen = (props) => {
               favList.map((el, index) => {
                 return (
                   <TouchableOpacity
-                    onPress={() => sheetRef.current.open()}
+                    onPress={() => {
+                      setSelectedEmployee(el);
+                      sheetRef.current.open();
+                    }}
                     style={styles.favContainer}
                     key={index}
                   >
@@ -272,7 +309,7 @@ const EmployeesScreen = (props) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.listItemContainer}
-                onPress={() => setFavList((arr) => [...arr, selectedEmployee])}
+                onPress={() => addRemoveUserFaveList()}
               >
                 <Image source={pin} style={styles.actionIcon} />
               </TouchableOpacity>

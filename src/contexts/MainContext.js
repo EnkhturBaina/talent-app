@@ -145,8 +145,6 @@ export const MainStore = (props) => {
 
   // Хэрэглэгчийн ирцын мэдээлэл авах
   const getEmployeeAttendanceList = async (selected_date, local_token) => {
-    console.log("selected_date", selected_date);
-    console.log("local_token", local_token);
     if (!selected_date) {
       selected_date = {
         id: date.getFullYear() + "-" + date.getMonth(),
@@ -176,11 +174,11 @@ export const MainStore = (props) => {
           if (response.data?.Type == 0) {
             response.data.Extra?.map((el) => {
               if (new Date().toISOString().slice(0, 10) == el.Date) {
-                // Ажилдаа ирсэн цаг тооцоолж харуулах
+                // Ажилдаа ирсэн цаг НҮҮР ХУУДСАНД харуулах
                 setRegisteredInTime(
                   el.TimeIn != null && el.TimeIn?.substr(11, 5)
                 );
-                // Ажлаас явсан цаг тооцоолж харуулах
+                // Ажлаас явсан цаг НҮҮР ХУУДСАНД харуулах
                 setRegisteredOutTime(
                   el.TimeOut != null && el.TimeOut?.substr(11, 5)
                 );
