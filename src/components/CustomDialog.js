@@ -14,7 +14,7 @@ export default function ({
 }) {
   var imageType = null;
   if (type == "warning") {
-    imageType = require("../../assets/checkmark.png");
+    imageType = require("../../assets/warning.png");
   } else if (type == "error") {
     imageType = require("../../assets/checkmark.png");
   } else {

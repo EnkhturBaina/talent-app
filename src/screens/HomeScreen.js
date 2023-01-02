@@ -140,7 +140,7 @@ const HomeScreen = (props) => {
           setVisibleDialog(true);
           setDialogText(response.data.Msg);
         } else if (response.data?.Type == 1) {
-          setDialogType("success");
+          setDialogType("warning");
           setVisibleDialog(true);
           setDialogText(response.data.Msg);
         } else if (response.data?.Type == 2) {
