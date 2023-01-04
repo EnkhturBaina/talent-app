@@ -211,8 +211,12 @@ export const MainStore = (props) => {
           setLoadingAttendanceList(false);
         })
         .catch(function (error) {
-          console.log("ERR", error);
-          if (error.response?.status == "401") {
+          if (!error.status) {
+            // network error
+            state.logout();
+            state.setIsLoading(false);
+            state.setLoginErrorMsg("Холболт салсан байна.");
+          } else if (error.response?.status == "401") {
             AsyncStorage.removeItem("use_bio");
             setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
             setIsLoading(false);
@@ -258,7 +262,7 @@ export const MainStore = (props) => {
       if (user_value != null) {
         // Local Storage -д хэрэглэгчийн мэдээлэл байвал
         const JSONValue = JSON.parse(user_value);
-        // console.log("USER VALUE ====>", JSONValue);
+        console.log("USER VALUE ====>", JSONValue);
         setEmail(JSONValue.user?.PersonalEmail);
         setToken(JSONValue.token);
         setUserId(JSONValue.user?.id);
@@ -317,7 +321,12 @@ export const MainStore = (props) => {
         }
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          logout();
+          setIsLoading(false);
+          setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           setIsLoading(false);

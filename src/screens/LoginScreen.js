@@ -138,7 +138,12 @@ const LoginScreen = (props) => {
           }
         })
         .catch(function (error) {
-          console.log("resetUUID error=====>", error);
+          if (!error.status) {
+            // network error
+            state.logout();
+            state.setIsLoading(false);
+            state.setLoginErrorMsg("Холболт салсан байна.");
+          }
         });
     }
   };
@@ -223,6 +228,12 @@ const LoginScreen = (props) => {
         })
         .catch(function (error) {
           // console.log("error", error);
+          if (!error.status) {
+            // network error
+            state.logout();
+            state.setIsLoading(false);
+            state.setLoginErrorMsg("Холболт салсан байна.");
+          }
         });
     }
   };

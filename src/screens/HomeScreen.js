@@ -161,7 +161,12 @@ const HomeScreen = (props) => {
         }
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);

@@ -17,6 +17,7 @@ const BottomSheet = ({
   displayName, //Дамжуулсан Object -н харуулах field
   handle,
   action, // parent Fn
+  lookUpType,
 }) => {
   const sheetRef = useRef(); //Bottomsheet
   const [heightBottomSheet, setHeightBottomSheet] = useState(0);

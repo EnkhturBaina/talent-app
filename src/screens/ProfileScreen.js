@@ -31,7 +31,7 @@ const ProfileScreen = (props) => {
     {
       img: require("../../assets/profile/profile.png"),
       label: "Миний профайл",
-      nav: "",
+      nav: "EditUserDataScreen",
     },
     {
       img: require("../../assets/profile/notif.png"),

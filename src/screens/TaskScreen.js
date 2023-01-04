@@ -7,19 +7,26 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
 import {
   FONT_FAMILY_BOLD,
   FONT_FAMILY_LIGHT,
   MAIN_BORDER_RADIUS,
   MAIN_COLOR,
+  SERVER_URL,
 } from "../constant";
 const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
 import { Icon } from "@rneui/base";
 import BottomSheet from "../components/BottomSheet";
+import { useIsFocused } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import Loader from "../components/Loader";
+import Empty from "../components/Empty";
 
 const TaskScreen = () => {
   const state = useContext(MainContext);
@@ -29,11 +36,70 @@ const TaskScreen = () => {
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
   const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
 
+  const [taskList, setTaskList] = useState("");
+  const [loadingTask, setLoadingTask] = useState(true);
+
+  const [refreshing, setRefreshing] = useState(false);
+  //Screen LOAD хийхэд дахин RENDER хийх
+  const isFocused = useIsFocused();
+
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getTaskList();
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
+
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
     setDisplayName(display); //Lookup -д харагдах датаны текст талбар
     setUselessParam(!uselessParam);
   };
+
+  const getTaskList = async () => {
+    setLoadingTask(true);
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/task/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        GMCompanyId: state.companyId,
+        ERPEmployeeId: state.userId,
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("get TaskList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setTaskList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        setLoadingTask(false);
+      })
+      .catch(function (error) {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+  useEffect(() => {
+    getTaskList();
+  }, [isFocused, selectedDate]);
 
   return (
     <SafeAreaView
@@ -44,7 +110,7 @@ const TaskScreen = () => {
       }}
     >
       <HeaderUser />
-      <View style={styles.headerActions}>
+      {/* <View style={styles.headerActions}>
         <TouchableOpacity
           style={styles.yearMonthPicker}
           onPress={() => setLookupData(state.last3Years, "name")}
@@ -54,26 +120,48 @@ const TaskScreen = () => {
           </Text>
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
-      </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
-        <TouchableOpacity
-          style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
+      </View> */}
+      {loadingTask ? (
+        <Loader />
+      ) : !loadingTask && taskList == "" ? (
+        <Empty text="Ажилтанд хамааралтай даалгавар олдсонгүй" />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: Platform.OS === "android" ? 80 : 50,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
         >
-          <View style={styles.firstRow}>
-            <View style={styles.stack1}>
-              <Text style={styles.name}>Даалгавар</Text>
-            </View>
-            <View style={styles.stack2}>
-              <Text style={styles.date}>2022-12-09 19:00</Text>
-            </View>
-          </View>
-          <View style={styles.secondRow}>
-            <Text numberOfLines={2} style={styles.description}>
-              Шинэ ажилтан Д.Баярсайханд шинэ аккаунт хаяг нээж өгөх
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
+          {taskList.map((el, index) => {
+            return (
+              <TouchableOpacity
+                style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
+                key={index}
+              >
+                <View style={styles.firstRow}>
+                  <View style={styles.stack1}>
+                    <Text style={styles.name}>Даалгавар</Text>
+                  </View>
+                  <View style={styles.stack2}>
+                    <Text style={styles.date}>{el.created_at}</Text>
+                  </View>
+                </View>
+                <View style={styles.secondRow}>
+                  <Text numberOfLines={2} style={styles.description}>
+                    {el.step.Name}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
       <BottomSheet
         bodyText={data}
         dragDown={true}
@@ -114,7 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 10,
     marginHorizontal: 20,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#edebeb",
     padding: 10,
   },
   firstRow: {

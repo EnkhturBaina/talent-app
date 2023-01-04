@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     height: 100,
     marginTop: 10,
     marginHorizontal: 20,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#edebeb",
     padding: 10,
   },
   firstRow: {

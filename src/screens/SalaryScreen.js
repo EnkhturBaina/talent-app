@@ -54,7 +54,8 @@ const SalaryScreen = (props) => {
         Authorization: `Bearer ${state.token}`,
       },
       data: {
-        StartDate: selectedDate.id + "-01",
+        // StartDate: selectedDate.id + "-01",
+        StartDate: "2022-12-01",
         ERPEmployeeId: state.userId,
         Type: "minutes",
       },
@@ -70,7 +71,12 @@ const SalaryScreen = (props) => {
         setLoadingBalance(false);
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
@@ -83,6 +89,9 @@ const SalaryScreen = (props) => {
     getBalance();
   }, [isFocused, selectedDate]);
 
+  const calcHoursMinutes = (data) => {
+    return Math.floor(data / 60) + " цаг " + (data % 60) + " минут";
+  };
   return (
     <SafeAreaView
       style={{
@@ -109,23 +118,9 @@ const SalaryScreen = (props) => {
             <Text style={styles.name}>Ажиллавал зохих</Text>
           </View>
           <View style={styles.stack2}>
-            <Text style={styles.date}>176 цаг 00 мин</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Амралт/чөлөө</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>176 цаг 00 мин</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Бүртгэгдсэн</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>176 цаг 00 мин</Text>
+            <Text style={styles.date}>
+              {calcHoursMinutes(balanceList.Required)}
+            </Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.stackContainer}>
@@ -133,15 +128,39 @@ const SalaryScreen = (props) => {
             <Text style={styles.name}>Хоцорсон</Text>
           </View>
           <View style={styles.stack2}>
-            <Text style={styles.date}>176 цаг 00 мин</Text>
+            <Text style={styles.date}>
+              {calcHoursMinutes(balanceList.Deficit)}
+            </Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.stackContainer}>
           <View style={styles.stack1}>
-            <Text style={styles.name}>Эрт явсан</Text>
+            <Text style={styles.name}>Дутуу цаг</Text>
           </View>
           <View style={styles.stack2}>
-            <Text style={styles.date}>176 цаг 00 мин</Text>
+            <Text style={styles.date}>
+              {calcHoursMinutes(balanceList.Remaining)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stackContainer}>
+          <View style={styles.stack1}>
+            <Text style={styles.name}>Бүртгэгдсэн</Text>
+          </View>
+          <View style={styles.stack2}>
+            <Text style={styles.date}>
+              {calcHoursMinutes(balanceList.Absence)}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stackContainer}>
+          <View style={styles.stack1}>
+            <Text style={styles.name}>Илүү цаг</Text>
+          </View>
+          <View style={styles.stack2}>
+            <Text style={styles.date}>
+              {calcHoursMinutes(balanceList.Overtime)}
+            </Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -192,7 +211,7 @@ const styles = StyleSheet.create({
   },
   stack1: {
     padding: 5,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#edebeb",
     width: "50%",
     height: "100%",
     justifyContent: "center",

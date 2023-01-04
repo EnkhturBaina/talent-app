@@ -59,7 +59,6 @@ const RequestListScreen = (props) => {
   };
 
   useEffect(() => {
-    console.log("state.last3Years", state.last3Years);
     getAbsences();
   }, [isFocused, selectedDate]);
 
@@ -91,7 +90,12 @@ const RequestListScreen = (props) => {
         setLoadingAbsences(false);
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);

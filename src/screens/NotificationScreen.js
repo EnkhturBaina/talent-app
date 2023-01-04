@@ -67,7 +67,12 @@ const NotificationScreen = () => {
         setLoadingNotifList(false);
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
@@ -98,7 +103,12 @@ const NotificationScreen = () => {
         getNotifList();
       })
       .catch(function (error) {
-        if (error.response?.status == "401") {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
           state.setIsLoading(false);
@@ -181,6 +191,19 @@ const NotificationScreen = () => {
                   {el.item.Content}
                 </Text>
               </View>
+              <View style={styles.statusRow}>
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.status,
+                    {
+                      backgroundColor: el.item?.state?.Color,
+                    },
+                  ]}
+                >
+                  {el.item?.state?.Name}
+                </Text>
+              </View>
             </TouchableOpacity>
           )}
           renderHiddenItem={renderHiddenItem}
@@ -207,7 +230,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 10,
     marginHorizontal: 20,
-    backgroundColor: "#d9d9d9",
+    backgroundColor: "#edebeb",
     padding: 10,
   },
   firstRow: {
@@ -223,6 +246,10 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   secondRow: {
+    marginTop: 10,
+    justifyContent: "center",
+  },
+  statusRow: {
     marginTop: 10,
     justifyContent: "center",
   },
@@ -257,5 +284,14 @@ const styles = StyleSheet.create({
   backRightBtnRight: {
     backgroundColor: "red",
     right: 0,
+  },
+  status: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    overflow: "hidden",
+    fontFamily: FONT_FAMILY_LIGHT,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    color: "#fff",
   },
 });

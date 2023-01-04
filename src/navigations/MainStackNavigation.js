@@ -20,6 +20,7 @@ import NotificationScreen from "../screens/NotificationScreen";
 import TaskScreen from "../screens/TaskScreen";
 import HelpScreen from "../screens/HelpScreen";
 import SalaryScreen from "../screens/SalaryScreen";
+import EditUserDataScreen from "../screens/EditUserDataScreen";
 
 const Stack = createStackNavigator();
 
@@ -312,6 +313,15 @@ const ProfileStackNavigator = (props) => {
       <Stack.Screen
         name="NotificationScreen"
         component={NotificationScreen}
+        options={{
+          title: "",
+          headerTitleStyle: {},
+          headerLeft: () => <></>,
+        }}
+      />
+      <Stack.Screen
+        name="EditUserDataScreen"
+        component={EditUserDataScreen}
         options={{
           title: "",
           headerTitleStyle: {},
