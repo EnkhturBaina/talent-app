@@ -53,8 +53,10 @@ const EmployeesScreen = (props) => {
 
   // PIN state -д ажилтан нэмэх, хасах
   const addRemoveUserFaveList = async () => {
-    if (favList == "") {
-      setFavList((arr) => [...arr, selectedEmployee]);
+    var tempArr = [];
+    if (favList == null) {
+      tempArr.push(selectedEmployee);
+      setFavList(tempArr);
     } else {
       var index = favList.indexOf(selectedEmployee);
       if (index !== -1) {
@@ -62,7 +64,7 @@ const EmployeesScreen = (props) => {
         reducedArr?.splice(index, 1);
         setFavList(reducedArr);
       } else {
-        setFavList((arr) => [...arr, selectedEmployee]);
+        setFavList((favList) => [...favList, selectedEmployee]);
       }
     }
   };

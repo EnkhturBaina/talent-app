@@ -8,6 +8,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView,
+  Platform,
 } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { Icon, Button } from "@rneui/themed";
@@ -115,10 +116,25 @@ const SendRequestScreen = (props) => {
   };
 
   const handleConfirm = (type, param, data) => {
+    var month = data.getMonth() + 1;
+    var day = data.getDate();
+
+    //Тухайн сар 1 оронтой бол урд нь 0 залгах
+    if (month.toString().length === 1) {
+      month = `0${month}`;
+    } else {
+      month = month;
+    }
+    //Тухайн өдөр 1 оронтой бол урд нь 0 залгах
+    if (day.toString().length === 1) {
+      day = `0${day}`;
+    } else {
+      day = day;
+    }
     if (type == "date") {
       setRequestData((prevState) => ({
         ...prevState,
-        [param]: data.toLocaleDateString()?.split(".").join("-"), // DATE форматаас '.' -г '-' болгон хадгалах
+        [param]: data.getFullYear() + "-" + month + "-" + day,
       }));
     } else {
       setRequestData((prevState) => ({
@@ -133,6 +149,7 @@ const SendRequestScreen = (props) => {
   };
 
   const saveAbsence = async () => {
+    // console.log("requestData", requestData);
     if (requestData.ERPAbsenceTypeCompanyId == "") {
       onToggleSnackBar("Хүсэлтийн төрөл сонгоно уу.");
     } else if (requestData.FromDate == "") {
@@ -165,7 +182,10 @@ const SendRequestScreen = (props) => {
             setVisibleDialog(true);
             setDialogText(response.data.Msg);
           } else if (response.data?.Type == 1) {
-            console.log("WARNING", response.data.Msg);
+            console.log("WARNING", response.data);
+            setDialogType("warning");
+            setVisibleDialog(true);
+            setDialogText(response.data.Msg);
           } else if (response.data?.Type == 2) {
           }
           setIsLoadingRequest(false);

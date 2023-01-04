@@ -88,11 +88,13 @@ export const MainStore = (props) => {
     //   }
     // });
     // setLast3Years(yearsWithMonths);
+    var current_date = new Date();
     var max = new Date().getFullYear();
     var min = max - 2;
-    var date = `${min.getFullYear()}-${max.getMonth()}`;
+    var date = `${min}-${current_date.getMonth()}`;
     var result = [];
-
+    var yearsWithMonths = [];
+    var month = 0;
     //set both start and end date to first date of the month
     const end_date = new Date(date.replace(" ", " ,1 "));
     const start_date = new Date(
@@ -102,11 +104,19 @@ export const MainStore = (props) => {
     );
 
     while (end_date <= start_date) {
-      // result.push(start_date.toLocaleString('en-CA', { month: '2-digit' , year: 'numeric'}));
-      console.log(start_date.getFullYear());
-      console.log(start_date.getMonth() + 1);
+      month = start_date.getMonth() + 1;
+      if (month.toString().length === 1) {
+        month = `0${month}`;
+      } else {
+        month = month;
+      }
+      yearsWithMonths.push({
+        id: start_date.getFullYear() + "-" + month,
+        name: start_date.getFullYear() + " - " + month + " сар",
+      });
       start_date.setMonth(start_date.getMonth() - 1);
     }
+    setLast3Years(yearsWithMonths);
   };
 
   useEffect(() => {

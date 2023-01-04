@@ -41,7 +41,6 @@ const HomeScreen = (props) => {
   const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
   const [time, setTime] = useState(); //Live Цаг
   var date = new Date();
-
   const [visibleDialog, setVisibleDialog] = useState(false);
   const [dialogType, setDialogType] = useState("success");
   const [dialogText, setDialogText] = useState("");
@@ -77,7 +76,22 @@ const HomeScreen = (props) => {
         return "-";
     }
   };
-
+  const month = (date) => {
+    const m = date.getMonth() + 1;
+    if (m.toString().length === 1) {
+      return `0${m}`;
+    } else {
+      return m;
+    }
+  };
+  const day = (date) => {
+    const d = date.getDate();
+    if (d.toString().length === 1) {
+      return `0${d}`;
+    } else {
+      return d;
+    }
+  };
   useEffect(() => {
     //Тухайн өдрийн нэрийг харуулах
     setDateByName(whatDay());
@@ -178,7 +192,7 @@ const HomeScreen = (props) => {
             <View style={styles.timeContainer}>
               <Text style={general_style.generalYellowTextBold}>
                 {dateByName},{" "}
-                {`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`}
+                {`${date.getFullYear()}-${month(date)}-${day(date)}`}
               </Text>
               <Text style={styles.currentTime}>{time}</Text>
               <Text style={general_style.generalYellowText}>

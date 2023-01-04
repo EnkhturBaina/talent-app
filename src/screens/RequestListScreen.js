@@ -59,6 +59,7 @@ const RequestListScreen = (props) => {
   };
 
   useEffect(() => {
+    console.log("state.last3Years", state.last3Years);
     getAbsences();
   }, [isFocused, selectedDate]);
 
