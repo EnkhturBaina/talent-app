@@ -61,7 +61,7 @@ const SalaryScreen = (props) => {
       },
     })
       .then((response) => {
-        console.log("get Balance======>", response.data.Extra);
+        // console.log("get Balance======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setBalanceList(response.data.Extra);
         } else if (response.data?.Type == 1) {

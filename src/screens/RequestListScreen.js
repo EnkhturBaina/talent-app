@@ -63,7 +63,6 @@ const RequestListScreen = (props) => {
   }, [isFocused, selectedDate]);
 
   const getAbsences = async () => {
-    console.log("selectedDate", selectedDate);
     setLoadingAbsences(true);
     await axios({
       method: "post",

@@ -148,10 +148,6 @@ const LoginScreen = (props) => {
     }
   };
   const login = async () => {
-    console.log(
-      "state.uuid ? state.uuid : tempUUID",
-      state.uuid ? state.uuid : tempUUID
-    );
     if (state.email == "") {
       onToggleSnackBar("И-мэйл хаягаа оруулна уу.");
     } else if (!regex_email.test(state.email)) {
@@ -194,7 +190,6 @@ const LoginScreen = (props) => {
                   state.uuid ? state.uuid : tempUUID
                 ).then(async (value) => {
                   if (state.isUseBiometric) {
-                    // console.log("BIO");
                     // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
                     await AsyncStorage.setItem("use_bio", "yes").then(
                       (value) => {

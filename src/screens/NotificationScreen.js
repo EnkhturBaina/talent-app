@@ -58,7 +58,7 @@ const NotificationScreen = () => {
       },
     })
       .then((response) => {
-        console.log("get NotifList======>", response.data.Extra);
+        // console.log("get NotifList======>", response.data.Extra);
         if (response.data?.Type == 0) {
           setNotifList(response.data.Extra);
         } else if (response.data?.Type == 1) {

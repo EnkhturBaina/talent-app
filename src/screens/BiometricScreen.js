@@ -30,12 +30,12 @@ const BiometricScreen = (props) => {
   const confirmBio = () => {
     (async () => {
       const compatible = await LocalAuthentication.hasHardwareAsync();
-      console.log("COMP", compatible);
+      // console.log("COMP", compatible);
       setBiometrics(compatible);
       compatible
         ? (async () => {
             const auth = await LocalAuthentication.authenticateAsync();
-            console.log("auth", auth);
+            // console.log("auth", auth);
             if (auth.success) {
               setGrantAccess(true);
               state.setIsLoggedIn(true);
