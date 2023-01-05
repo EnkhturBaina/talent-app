@@ -6,8 +6,8 @@ import {
   NativeModules,
   Platform,
   TouchableOpacity,
-  ScrollView,
   RefreshControl,
+  ScrollView,
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
@@ -20,22 +20,17 @@ import {
 } from "../constant";
 const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
-import { Icon } from "@rneui/base";
-import BottomSheet from "../components/BottomSheet";
 import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import Loader from "../components/Loader";
 import Empty from "../components/Empty";
+import { SwipeListView } from "react-native-swipe-list-view";
 
 const TaskScreen = () => {
   const state = useContext(MainContext);
-  var date = new Date();
-  const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
-  const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
-  const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
-  const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
 
+  const [stateList, setStateList] = useState("");
   const [taskList, setTaskList] = useState("");
   const [loadingTask, setLoadingTask] = useState(true);
 
@@ -52,12 +47,6 @@ const TaskScreen = () => {
     getTaskList();
     wait(1000).then(() => setRefreshing(false));
   }, []);
-
-  const setLookupData = (data, display) => {
-    setData(data); //Lookup -д харагдах дата
-    setDisplayName(display); //Lookup -д харагдах датаны текст талбар
-    setUselessParam(!uselessParam);
-  };
 
   const getTaskList = async () => {
     setLoadingTask(true);
@@ -84,8 +73,88 @@ const TaskScreen = () => {
         setLoadingTask(false);
       })
       .catch(function (error) {
+        // console.log("getTaskList errrrrrrrrrrr=>", error);
         if (!error.status) {
-          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+
+  const getStateList = async () => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/state/list`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: state.companyId,
+        Type: "",
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("get TaskList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+          setStateList(response.data.Extra);
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+      })
+      .catch(function (error) {
+        if (!error.status) {
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
+  const completeTask = async (erp_employee_id, task_id) => {
+    var stateId = null;
+    //Дуусгасан төлөвийн ID
+    stateList.filter((obj) => {
+      if (obj.Name == "Дуусгасан") {
+        stateId = obj.id;
+      }
+    });
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/task/state/change`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        ERPEmployeeId: erp_employee_id,
+        ERPStateId: stateId,
+        ERPSenderId: state.userId,
+        id: task_id,
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("complete Task======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        getTaskList();
+      })
+      .catch(function (error) {
+        if (!error.status) {
           state.logout();
           state.setIsLoading(false);
           state.setLoginErrorMsg("Холболт салсан байна.");
@@ -98,9 +167,44 @@ const TaskScreen = () => {
       });
   };
   useEffect(() => {
+    getStateList();
     getTaskList();
-  }, [isFocused, selectedDate]);
+  }, [isFocused]);
 
+  const renderHiddenItem = (data) => {
+    return (
+      <View style={styles.rowBack}>
+        <TouchableOpacity
+          style={[styles.backRightBtn, styles.backRightBtnRight]}
+          onPress={() => completeTask(data.item.ERPEmployeeId, data.item.id)}
+        >
+          <Text style={styles.backTextWhite}>Дуусгах</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const renderItem = (el) => {
+    return (
+      <TouchableOpacity
+        style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
+        activeOpacity={1}
+      >
+        <View style={styles.firstRow}>
+          <View style={styles.stack1}>
+            <Text style={styles.name}>Даалгавар</Text>
+          </View>
+          <View style={styles.stack2}>
+            <Text style={styles.date}>{el.item.created_at}</Text>
+          </View>
+        </View>
+        <View style={styles.secondRow}>
+          <Text numberOfLines={2} style={styles.description}>
+            {el.item.step.Name}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
   return (
     <SafeAreaView
       style={{
@@ -110,24 +214,12 @@ const TaskScreen = () => {
       }}
     >
       <HeaderUser />
-      {/* <View style={styles.headerActions}>
-        <TouchableOpacity
-          style={styles.yearMonthPicker}
-          onPress={() => setLookupData(state.last3Years, "name")}
-        >
-          <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>
-            {selectedDate.name}
-          </Text>
-          <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
-        </TouchableOpacity>
-      </View> */}
       {loadingTask ? (
         <Loader />
       ) : !loadingTask && taskList == "" ? (
-        <Empty text="Ажилтанд хамааралтай даалгавар олдсонгүй" />
-      ) : (
         <ScrollView
           contentContainerStyle={{
+            flexGrow: 1,
             paddingBottom: Platform.OS === "android" ? 80 : 50,
           }}
           refreshControl={
@@ -138,38 +230,25 @@ const TaskScreen = () => {
             />
           }
         >
-          {taskList.map((el, index) => {
-            return (
-              <TouchableOpacity
-                style={[styles.taskContainer, { borderLeftColor: MAIN_COLOR }]}
-                key={index}
-              >
-                <View style={styles.firstRow}>
-                  <View style={styles.stack1}>
-                    <Text style={styles.name}>Даалгавар</Text>
-                  </View>
-                  <View style={styles.stack2}>
-                    <Text style={styles.date}>{el.created_at}</Text>
-                  </View>
-                </View>
-                <View style={styles.secondRow}>
-                  <Text numberOfLines={2} style={styles.description}>
-                    {el.step.Name}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+          <Empty text="Ажилтанд хамааралтай даалгавар олдсонгүй" />
         </ScrollView>
+      ) : (
+        <SwipeListView
+          data={taskList}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+          renderItem={renderItem}
+          renderHiddenItem={renderHiddenItem}
+          disableRightSwipe
+          rightOpenValue={-75}
+          keyExtractor={(item) => item.id}
+        />
       )}
-      <BottomSheet
-        bodyText={data}
-        dragDown={true}
-        backClick={true}
-        displayName={displayName}
-        handle={uselessParam}
-        action={(e) => setSelectedDate(e)}
-      />
     </SafeAreaView>
   );
 };
@@ -229,6 +308,32 @@ const styles = StyleSheet.create({
     fontFamily: FONT_FAMILY_LIGHT,
   },
   description: {
+    fontFamily: FONT_FAMILY_LIGHT,
+  },
+  rowBack: {
+    alignItems: "center",
+    backgroundColor: "#DDD",
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 15,
+    marginTop: 10,
+    marginHorizontal: 20,
+  },
+  backRightBtn: {
+    alignItems: "center",
+    bottom: 0,
+    justifyContent: "center",
+    position: "absolute",
+    top: 0,
+    width: 75,
+  },
+  backRightBtnRight: {
+    backgroundColor: MAIN_COLOR,
+    right: 0,
+  },
+  backTextWhite: {
+    color: "#fff",
     fontFamily: FONT_FAMILY_LIGHT,
   },
 });

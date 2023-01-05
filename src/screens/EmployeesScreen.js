@@ -198,7 +198,21 @@ const EmployeesScreen = (props) => {
         {loadingEmployees ? (
           <Loader />
         ) : !filteredData && filteredData != "" ? (
-          <Empty text="Ажилтан олдсонгүй" />
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: Platform.OS === "android" ? 80 : 50,
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={"#fff"}
+              />
+            }
+          >
+            <Empty text="Ажилтан олдсонгүй" />
+          </ScrollView>
         ) : (
           <View
             style={{ flex: 1, paddingBottom: Platform.OS === "ios" ? 50 : 70 }}

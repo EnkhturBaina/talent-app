@@ -7,6 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   RefreshControl,
+  ScrollView,
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
@@ -80,7 +81,7 @@ const NotificationScreen = () => {
         }
       });
   };
-
+  //Бүх мэдэгдэл уншсан болгох
   const readAllNotif = async () => {
     await axios({
       method: "post",
@@ -117,20 +118,93 @@ const NotificationScreen = () => {
       });
   };
 
+  //Тухайн 1 мэдэгдэл уншсан болгох
+  const readNotif = async (notifId) => {
+    await axios({
+      method: "post",
+      url: `${SERVER_URL}/mobile/notification/change`,
+      headers: {
+        Authorization: `Bearer ${state.token}`,
+      },
+      data: {
+        NotificationId: notifId,
+        MobileUUID: state.uuid,
+      },
+    })
+      .then((response) => {
+        // console.log("get NotifList======>", response.data.Extra);
+        if (response.data?.Type == 0) {
+        } else if (response.data?.Type == 1) {
+          console.log("WARNING", response.data.Msg);
+        } else if (response.data?.Type == 2) {
+        }
+        getNotifList();
+      })
+      .catch(function (error) {
+        if (!error.status) {
+          // network error
+          state.logout();
+          state.setIsLoading(false);
+          state.setLoginErrorMsg("Холболт салсан байна.");
+        } else if (error.response?.status == "401") {
+          AsyncStorage.removeItem("use_bio");
+          state.setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
+          state.setIsLoading(false);
+          state.logout();
+        }
+      });
+  };
   useEffect(() => {
     getNotifList();
   }, []);
 
-  const renderHiddenItem = (data, rowMap) => (
-    <View style={styles.rowBack}>
+  const renderHiddenItem = (data) => {
+    return (
+      <View style={styles.rowBack}>
+        <TouchableOpacity
+          style={[styles.backRightBtn, styles.backRightBtnRight]}
+          onPress={() => readNotif(data.item.id)}
+        >
+          <Text style={styles.backTextWhite}>Унших</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const renderItem = (el) => {
+    return (
       <TouchableOpacity
-        style={[styles.backRightBtn, styles.backRightBtnRight]}
-        onPress={() => console.log("DELETE")}
+        style={[styles.notifContainer, { borderLeftColor: MAIN_COLOR }]}
+        activeOpacity={1}
       >
-        <Text style={styles.backTextWhite}>READ</Text>
+        <View style={styles.firstRow}>
+          <View style={styles.stack1}>
+            <Text style={styles.name}>{el.item.Title}</Text>
+          </View>
+          <View style={styles.stack2}>
+            <Text style={styles.date}>{el.item.created_at}</Text>
+          </View>
+        </View>
+        <View style={styles.secondRow}>
+          <Text numberOfLines={2} style={styles.description}>
+            {el.item.Content}
+          </Text>
+        </View>
+        <View style={styles.statusRow}>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.status,
+              {
+                backgroundColor: el.item?.state?.Color,
+              },
+            ]}
+          >
+            {el.item?.state?.Name}
+          </Text>
+        </View>
       </TouchableOpacity>
-    </View>
-  );
+    );
+  };
   return (
     <SafeAreaView
       style={{
@@ -153,18 +227,17 @@ const NotificationScreen = () => {
             fontSize: 16,
             fontFamily: FONT_FAMILY_BOLD,
           }}
-          onPress={() => (notifList != "" ? readAllNotif() : null)}
+          // onPress={() => (notifList != "" ? readAllNotif() : null)}
         />
       </View>
       {loadingNotifList ? (
         <Loader />
       ) : !loadingNotifList && notifList == "" ? (
-        <Empty text="Мэдэгдэл олдсонгүй" />
-      ) : (
-        <SwipeListView
-          data={notifList}
-          closeOnRowOpen
-          closeOnRowPress
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: Platform.OS === "android" ? 80 : 50,
+          }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -172,43 +245,24 @@ const NotificationScreen = () => {
               tintColor={"#fff"}
             />
           }
-          renderItem={(el, rowMap) => (
-            <TouchableOpacity
-              style={[styles.notifContainer, { borderLeftColor: MAIN_COLOR }]}
-              key={rowMap}
-              activeOpacity={1}
-            >
-              <View style={styles.firstRow}>
-                <View style={styles.stack1}>
-                  <Text style={styles.name}>{el.item.Title}</Text>
-                </View>
-                <View style={styles.stack2}>
-                  <Text style={styles.date}>{el.item.created_at}</Text>
-                </View>
-              </View>
-              <View style={styles.secondRow}>
-                <Text numberOfLines={2} style={styles.description}>
-                  {el.item.Content}
-                </Text>
-              </View>
-              <View style={styles.statusRow}>
-                <Text
-                  numberOfLines={1}
-                  style={[
-                    styles.status,
-                    {
-                      backgroundColor: el.item?.state?.Color,
-                    },
-                  ]}
-                >
-                  {el.item?.state?.Name}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          )}
+        >
+          <Empty text="Мэдэгдэл олдсонгүй" />
+        </ScrollView>
+      ) : (
+        <SwipeListView
+          data={notifList}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+          renderItem={renderItem}
           renderHiddenItem={renderHiddenItem}
           disableRightSwipe
           rightOpenValue={-75}
+          keyExtractor={(item) => item.id}
         />
       )}
     </SafeAreaView>
@@ -282,8 +336,12 @@ const styles = StyleSheet.create({
     width: 75,
   },
   backRightBtnRight: {
-    backgroundColor: "red",
+    backgroundColor: MAIN_COLOR,
     right: 0,
+  },
+  backTextWhite: {
+    color: "#fff",
+    fontFamily: FONT_FAMILY_LIGHT,
   },
   status: {
     alignSelf: "flex-start",

@@ -63,6 +63,7 @@ const RequestListScreen = (props) => {
   }, [isFocused, selectedDate]);
 
   const getAbsences = async () => {
+    console.log("selectedDate", selectedDate);
     setLoadingAbsences(true);
     await axios({
       method: "post",
@@ -143,7 +144,21 @@ const RequestListScreen = (props) => {
       {loadingAbsences ? (
         <Loader />
       ) : !loadingAbsences && absenceList == "" ? (
-        <Empty text="Ажилтны хүсэлтийн мэдээлэл олдсонгүй" />
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: Platform.OS === "android" ? 80 : 50,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+        >
+          <Empty text="Ажилтны хүсэлтийн мэдээлэл олдсонгүй" />
+        </ScrollView>
       ) : (
         <ScrollView
           contentContainerStyle={{
