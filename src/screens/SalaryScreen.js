@@ -7,8 +7,9 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Icon } from "@rneui/themed";
 import HeaderUser from "../components/HeaderUser";
 import BottomSheet from "../components/BottomSheet";
@@ -24,10 +25,10 @@ import axios from "axios";
 const { StatusBarManager } = NativeModules;
 import { useIsFocused } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Loader from "../components/Loader";
 
 const SalaryScreen = (props) => {
   const state = useContext(MainContext);
-  var date = new Date();
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
   const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
   const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
@@ -36,9 +37,20 @@ const SalaryScreen = (props) => {
   const [balanceList, setBalanceList] = useState("");
   const [loadingBalance, setLoadingBalance] = useState(true);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   //Screen LOAD хийхэд дахин RENDER хийх
   const isFocused = useIsFocused();
 
+  const wait = (timeout) => {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getBalance();
+    wait(1000).then(() => setRefreshing(false));
+  }, []);
   const setLookupData = (data, display) => {
     setData(data); //Lookup -д харагдах дата
     setDisplayName(display); //Lookup -д харагдах датаны текст талбар
@@ -112,58 +124,71 @@ const SalaryScreen = (props) => {
           <Icon name="keyboard-arrow-down" type="material-icons" size={30} />
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 50 }} bounces={false}>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Ажиллавал зохих</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>
-              {calcHoursMinutes(balanceList.Required)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Хоцорсон</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>
-              {calcHoursMinutes(balanceList.Deficit)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Дутуу цаг</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>
-              {calcHoursMinutes(balanceList.Remaining)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Бүртгэгдсэн</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>
-              {calcHoursMinutes(balanceList.Absence)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stackContainer}>
-          <View style={styles.stack1}>
-            <Text style={styles.name}>Илүү цаг</Text>
-          </View>
-          <View style={styles.stack2}>
-            <Text style={styles.date}>
-              {calcHoursMinutes(balanceList.Overtime)}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
+      {loadingBalance ? (
+        <Loader />
+      ) : (
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 50 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={"#fff"}
+            />
+          }
+        >
+          <TouchableOpacity style={styles.stackContainer}>
+            <View style={styles.stack1}>
+              <Text style={styles.name}>Ажиллавал зохих</Text>
+            </View>
+            <View style={styles.stack2}>
+              <Text style={styles.date}>
+                {calcHoursMinutes(balanceList.Required)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.stackContainer}>
+            <View style={styles.stack1}>
+              <Text style={styles.name}>Хоцорсон</Text>
+            </View>
+            <View style={styles.stack2}>
+              <Text style={styles.date}>
+                {calcHoursMinutes(balanceList.Deficit)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.stackContainer}>
+            <View style={styles.stack1}>
+              <Text style={styles.name}>Дутуу цаг</Text>
+            </View>
+            <View style={styles.stack2}>
+              <Text style={styles.date}>
+                {calcHoursMinutes(balanceList.Remaining)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.stackContainer}>
+            <View style={styles.stack1}>
+              <Text style={styles.name}>Бүртгэгдсэн</Text>
+            </View>
+            <View style={styles.stack2}>
+              <Text style={styles.date}>
+                {calcHoursMinutes(balanceList.Absence)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.stackContainer}>
+            <View style={styles.stack1}>
+              <Text style={styles.name}>Илүү цаг</Text>
+            </View>
+            <View style={styles.stack2}>
+              <Text style={styles.date}>
+                {calcHoursMinutes(balanceList.Overtime)}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
       <BottomSheet
         bodyText={data}
         dragDown={true}
