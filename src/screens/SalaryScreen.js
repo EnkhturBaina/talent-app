@@ -66,8 +66,8 @@ const SalaryScreen = (props) => {
         Authorization: `Bearer ${state.token}`,
       },
       data: {
-        // StartDate: selectedDate.id + "-01",
-        StartDate: "2022-12-01",
+        StartDate: selectedDate.id + "-01",
+        // StartDate: "2022-12-01",
         ERPEmployeeId: state.userId,
         Type: "minutes",
       },

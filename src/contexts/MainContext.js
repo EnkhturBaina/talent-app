@@ -90,10 +90,9 @@ export const MainStore = (props) => {
     // setLast3Years(yearsWithMonths);
     var current_date = new Date();
     var max = new Date().getFullYear();
-    var min = max - 2;
-    var date = `${min}-${current_date.getMonth()}`;
-    var result = [];
-    var yearsWithMonths = [];
+    var min = max - 2; // Одоогоос өмнөх 2 жил
+    var date = `${min}-${current_date.getMonth()}`; // Одоогоос өмнөх 2 жилийн энэ өдөр
+    var yearsWithMonths = []; //Жил-Сар түр хадгалах
     var month = 0;
     //set both start and end date to first date of the month
     const end_date = new Date(date.replace(" ", " ,1 "));
@@ -131,14 +130,14 @@ export const MainStore = (props) => {
         setNotification(notification); // Энд Notification -ы Object ирнэ
       });
 
-    //Notification дээр дарах
+    // Ирсэн Notification дээр дарах
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         // console.log(response);
       });
 
     return () => {
-      //Notification -г ажилласны дараа чөлөөлж өгөх
+      //Notification -г ажилласны дараа чөлөөлж өгөх (Заавал байна)
       Notifications.removeNotificationSubscription(
         notificationListener.current
       );

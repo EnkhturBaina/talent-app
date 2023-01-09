@@ -18,12 +18,14 @@ const HeaderUser = (props) => {
           <Text style={styles.userName}>{state.userData.FirstName}</Text>
         </View>
       </View>
-      <Icon
-        type="feather"
-        name="bell"
-        size={30}
-        onPress={() => navigation.navigate("NotificationScreen")}
-      />
+      {!props.isNotificationScreen ? (
+        <Icon
+          type="feather"
+          name="bell"
+          size={30}
+          onPress={() => navigation.navigate("NotificationScreen")}
+        />
+      ) : null}
     </View>
   );
 };

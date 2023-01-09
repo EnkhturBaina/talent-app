@@ -213,7 +213,7 @@ const NotificationScreen = () => {
         backgroundColor: "#fff",
       }}
     >
-      <HeaderUser />
+      <HeaderUser isNotificationScreen />
       <View style={styles.headerActions}>
         <Button
           containerStyle={{}}
