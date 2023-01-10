@@ -46,7 +46,7 @@ export const MainStore = (props) => {
   const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
 
   const [isSwitchOn, setIsSwitchOn] = useState(false); //Ирц бүртгэл сануулах эсэх (Profile хуудаснаас тохируулах)
-  const [checkSwitch, setCheckSwitch] = useState(false);
+  const [checkSwitch, setCheckSwitch] = useState(false); //Ирц бүртгэл STORAGE -с шалгасан эсэх
 
   var date = new Date();
 
@@ -342,6 +342,7 @@ export const MainStore = (props) => {
   };
 
   const calcNotificationTime = async () => {
+    // Утасны STORAGE -д Ирц бүртгэл сануулах тохиргоо CHECK хийгдсэн байгаа эсэх
     await AsyncStorage.getItem("local_notif").then(async (value) => {
       if (value == "yes") {
         setIsSwitchOn(true);
@@ -368,6 +369,7 @@ export const MainStore = (props) => {
   };
 
   const triggerNotifications = async () => {
+    // Ажил ирэх, явах цаг 5 минутын өмнө мэдэгдэхийг тохируулах
     var notif_date_in = new Date();
     var notif_date_out = new Date();
 
@@ -419,11 +421,11 @@ export const MainStore = (props) => {
       await AsyncStorage.setItem("local_notif", "yes");
     } else {
       await AsyncStorage.setItem("local_notif", "no");
+      // local Notification болиулах
       Notifications.cancelAllScheduledNotificationsAsync();
     }
   };
   useEffect(() => {
-    //CHECKED болсон үед ажиллах
     localStorageCheckNotif();
   }, [checkSwitch, isSwitchOn]);
 
