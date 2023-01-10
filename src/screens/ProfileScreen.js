@@ -32,11 +32,13 @@ const ProfileScreen = (props) => {
       img: require("../../assets/profile/profile.png"),
       label: "Миний профайл",
       nav: "EditUserDataScreen",
+      active: true,
     },
     {
       img: require("../../assets/profile/notif.png"),
       label: "Ирц бүртгэл сануулах",
       nav: "",
+      active: true,
       render: (
         <Switch
           value={isSwitchOn}
@@ -49,22 +51,26 @@ const ProfileScreen = (props) => {
       img: require("../../assets/profile/pass.png"),
       label: "Нууц үг солих",
       nav: "",
+      active: false,
     },
     {
       img: require("../../assets/profile/org.png"),
       label: "Байгууллагийн тохиргоо",
       nav: "",
+      active: false,
     },
     {
       img: require("../../assets/profile/lang.png"),
       label: "Хэл солих",
       nav: "",
+      active: false,
       render: <Text style={{ fontFamily: FONT_FAMILY_BOLD }}>Монгол</Text>,
     },
     {
       img: "",
       label: "Гарах",
       nav: "",
+      active: true,
       action: () => state.logout(),
     },
   ];
@@ -82,7 +88,7 @@ const ProfileScreen = (props) => {
         {menus.map((el, index) => {
           return (
             <TouchableOpacity
-              style={styles.profileCard}
+              style={[styles.profileCard, { opacity: el.active ? 1 : 0.5 }]}
               onPress={() =>
                 el.action
                   ? el.action("AAA")
@@ -91,6 +97,7 @@ const ProfileScreen = (props) => {
                   : null
               }
               key={index}
+              disabled={!el.active}
             >
               <View style={styles.iconContainer}>
                 <Image

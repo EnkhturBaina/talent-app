@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ScrollView,
+  Image,
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
@@ -26,6 +27,7 @@ import axios from "axios";
 import Loader from "../components/Loader";
 import Empty from "../components/Empty";
 import { SwipeListView } from "react-native-swipe-list-view";
+import task from "../../assets/task.png";
 
 const TaskScreen = () => {
   const state = useContext(MainContext);
@@ -198,9 +200,11 @@ const TaskScreen = () => {
           </View>
         </View>
         <View style={styles.secondRow}>
-          <Text numberOfLines={2} style={styles.description}>
-            {el.item.step.Name}
-          </Text>
+          <Text style={styles.description}>{el.item.step.Name}</Text>
+          <Image
+            source={task}
+            style={{ width: 40, height: 40, resizeMode: "contain" }}
+          />
         </View>
       </TouchableOpacity>
     );
@@ -247,6 +251,9 @@ const TaskScreen = () => {
           disableRightSwipe
           rightOpenValue={-75}
           keyExtractor={(item) => item.id}
+          style={{
+            marginBottom: Platform.OS === "android" ? 80 : 50,
+          }}
         />
       )}
     </SafeAreaView>
@@ -299,7 +306,8 @@ const styles = StyleSheet.create({
   secondRow: {
     flex: 1,
     marginTop: 10,
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   name: {
     fontFamily: FONT_FAMILY_BOLD,
@@ -309,6 +317,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontFamily: FONT_FAMILY_LIGHT,
+    flex: 1,
   },
   rowBack: {
     alignItems: "center",

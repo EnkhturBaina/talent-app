@@ -1,8 +1,8 @@
-import { Icon } from "@rneui/base";
 import React, { useContext } from "react";
-import { View, Image, Text, StyleSheet } from "react-native";
+import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { FONT_FAMILY_BOLD, MAIN_COLOR } from "../constant";
 import MainContext from "../contexts/MainContext";
+import notif from "../../assets/notif.png";
 import { useNavigation } from "@react-navigation/native";
 
 const HeaderUser = (props) => {
@@ -19,12 +19,14 @@ const HeaderUser = (props) => {
         </View>
       </View>
       {!props.isNotificationScreen ? (
-        <Icon
-          type="feather"
-          name="bell"
-          size={30}
+        <TouchableOpacity
           onPress={() => navigation.navigate("NotificationScreen")}
-        />
+        >
+          <Image
+            source={notif}
+            style={{ width: 35, height: 35, resizeMode: "contain" }}
+          />
+        </TouchableOpacity>
       ) : null}
     </View>
   );

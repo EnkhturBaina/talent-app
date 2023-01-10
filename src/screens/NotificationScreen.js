@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ScrollView,
+  Image,
 } from "react-native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import HeaderUser from "../components/HeaderUser";
@@ -26,6 +27,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Loader from "../components/Loader";
 import { SwipeListView } from "react-native-swipe-list-view";
 import Empty from "../components/Empty";
+import notif from "../../assets/notif.png";
 
 const NotificationScreen = () => {
   const state = useContext(MainContext);
@@ -185,22 +187,23 @@ const NotificationScreen = () => {
           </View>
         </View>
         <View style={styles.secondRow}>
-          <Text numberOfLines={2} style={styles.description}>
-            {el.item.Content}
-          </Text>
-        </View>
-        <View style={styles.statusRow}>
-          <Text
-            numberOfLines={1}
-            style={[
-              styles.status,
-              {
-                backgroundColor: el.item?.state?.Color,
-              },
-            ]}
-          >
-            {el.item?.state?.Name}
-          </Text>
+          <View style={styles.statusRow}>
+            <Text style={styles.description}>{el.item.Content}</Text>
+            <Text
+              style={[
+                styles.status,
+                {
+                  backgroundColor: el.item?.state?.Color,
+                },
+              ]}
+            >
+              {el.item?.state?.Name}
+            </Text>
+          </View>
+          <Image
+            source={notif}
+            style={{ width: 40, height: 40, resizeMode: "contain" }}
+          />
         </View>
       </TouchableOpacity>
     );
@@ -263,6 +266,9 @@ const NotificationScreen = () => {
           disableRightSwipe
           rightOpenValue={-75}
           keyExtractor={(item) => item.id}
+          style={{
+            marginBottom: Platform.OS === "android" ? 80 : 50,
+          }}
         />
       )}
     </SafeAreaView>
@@ -300,12 +306,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   secondRow: {
+    flex: 1,
     marginTop: 10,
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   statusRow: {
-    marginTop: 10,
-    justifyContent: "center",
+    flex: 1,
   },
   name: {
     fontFamily: FONT_FAMILY_BOLD,
@@ -315,6 +322,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   description: {
+    flex: 1,
     fontFamily: FONT_FAMILY_LIGHT,
   },
   rowBack: {
