@@ -36,9 +36,6 @@ import CustomDialog from "../components/CustomDialog";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
-  const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
-  const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
-  const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
   const [time, setTime] = useState(); //Live Цаг
   var date = new Date();
   const [visibleDialog, setVisibleDialog] = useState(false);
@@ -56,26 +53,6 @@ const HomeScreen = (props) => {
     { img: help, label: "Тусламж", nav: "HelpScreen" },
   ];
 
-  const whatDay = () => {
-    switch (date.getDay()) {
-      case 1:
-        return "Даваа";
-      case 2:
-        return "Мягмар";
-      case 3:
-        return "Лхагва";
-      case 4:
-        return "Пүрэв";
-      case 5:
-        return "Баасан";
-      case 6:
-        return "Бямба";
-      case 7:
-        return "Нум";
-      default:
-        return "-";
-    }
-  };
   const month = (date) => {
     const m = date.getMonth() + 1;
     if (m.toString().length === 1) {
@@ -92,24 +69,6 @@ const HomeScreen = (props) => {
       return d;
     }
   };
-  useEffect(() => {
-    //Тухайн өдрийн нэрийг харуулах
-    setDateByName(whatDay());
-
-    //Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
-    if (state.userData?.attendance_type?.details) {
-      state.userData?.attendance_type?.details.map((el) => {
-        if (el.WeekDay == date.getDay()) {
-          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "00:00");
-          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "00:00");
-        }
-      });
-    } else {
-      //Ажиллахгүй өдөр 00:00 харуулах
-      setInTime("00:00");
-      setOutTime("00:00");
-    }
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -196,12 +155,12 @@ const HomeScreen = (props) => {
           <View style={styles.attendanceContainer}>
             <View style={styles.timeContainer}>
               <Text style={general_style.generalYellowTextBold}>
-                {dateByName},{" "}
+                {state.dateByName},{" "}
                 {`${date.getFullYear()}-${month(date)}-${day(date)}`}
               </Text>
               <Text style={styles.currentTime}>{time}</Text>
               <Text style={general_style.generalYellowText}>
-                Ажлын цаг: {inTime}-{outTime}
+                Ажлын цаг: {state.inTime}-{state.outTime}
               </Text>
             </View>
             <View style={styles.registerContainer}>

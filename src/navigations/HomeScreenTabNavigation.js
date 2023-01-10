@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     textAlignVertical: "center",
-    lineHeight: Platform.OS == "ios" ? 45 : 35,
+    lineHeight: Platform.OS == "ios" ? 45 : 40,
   },
   tabIcon: {
     width: 25,

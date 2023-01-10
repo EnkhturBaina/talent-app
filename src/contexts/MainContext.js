@@ -41,6 +41,13 @@ export const MainStore = (props) => {
   const [registeredInTime, setRegisteredInTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажилдаа ирсэн цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
   const [registeredOutTime, setRegisteredOutTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажлаас явсан цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
 
+  const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
+  const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
+  const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
+
+  const [isSwitchOn, setIsSwitchOn] = useState(false); //Ирц бүртгэл сануулах эсэх (Profile хуудаснаас тохируулах)
+  const [checkSwitch, setCheckSwitch] = useState(false);
+
   var date = new Date();
 
   const notificationListener = useRef();
@@ -65,29 +72,28 @@ export const MainStore = (props) => {
     return token;
   }
 
-  const generateLast3Years = () => {
-    // Сүүлийн 3 жилийг сартай GENERATE хийх
-    // var monthName = new Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-    // var max = new Date().getFullYear();
-    // var min = max - 2;
-    // var years = [];
-    // var yearsWithMonths = [];
-    // var d = new Date();
+  const whatDay = () => {
+    switch (date.getDay()) {
+      case 1:
+        return "Даваа";
+      case 2:
+        return "Мягмар";
+      case 3:
+        return "Лхагва";
+      case 4:
+        return "Пүрэв";
+      case 5:
+        return "Баасан";
+      case 6:
+        return "Бямба";
+      case 7:
+        return "Нум";
+      default:
+        return "-";
+    }
+  };
 
-    // for (var i = max; i >= min; i--) {
-    //   years.push(i);
-    // }
-    // years.map((el) => {
-    //   for (var i = 0; i <= 11; i++) {
-    //     console.log("monthName[d.getMonth()]", monthName[d.getMonth()]);
-    //     yearsWithMonths.push({
-    //       id: el + "-" + monthName[d.getMonth()],
-    //       name: el + " - " + monthName[d.getMonth()] + " сар",
-    //     });
-    //     d.setMonth(d.getMonth() - 1);
-    //   }
-    // });
-    // setLast3Years(yearsWithMonths);
+  const generateLast3Years = () => {
     var current_date = new Date();
     var max = new Date().getFullYear();
     var min = max - 2; // Одоогоос өмнөх 2 жил
@@ -212,9 +218,9 @@ export const MainStore = (props) => {
         .catch(function (error) {
           if (!error.status) {
             // network error
-            state.logout();
-            state.setIsLoading(false);
-            state.setLoginErrorMsg("Холболт салсан байна.");
+            logout();
+            setIsLoading(false);
+            setLoginErrorMsg("Холболт салсан байна.");
           } else if (error.response?.status == "401") {
             AsyncStorage.removeItem("use_bio");
             setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
@@ -261,7 +267,7 @@ export const MainStore = (props) => {
       if (user_value != null) {
         // Local Storage -д хэрэглэгчийн мэдээлэл байвал
         const JSONValue = JSON.parse(user_value);
-        console.log("USER VALUE ====>", JSONValue);
+        // console.log("USER VALUE ====>", JSONValue);
         setEmail(JSONValue.user?.PersonalEmail);
         setToken(JSONValue.token);
         setUserId(JSONValue.user?.id);
@@ -279,6 +285,7 @@ export const MainStore = (props) => {
 
   useEffect(() => {
     getUserUUID(userData?.PersonalEmail, token, uuid);
+    calcNotificationTime();
   }, [userData]);
 
   const logout = () => {
@@ -334,6 +341,92 @@ export const MainStore = (props) => {
       });
   };
 
+  const calcNotificationTime = async () => {
+    await AsyncStorage.getItem("local_notif").then(async (value) => {
+      if (value == "yes") {
+        setIsSwitchOn(true);
+      }
+      setCheckSwitch(!checkSwitch);
+    });
+
+    //Тухайн өдрийн нэрийг харуулах
+    setDateByName(whatDay());
+
+    //Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
+    if (userData?.attendance_type?.details) {
+      userData?.attendance_type?.details.map((el) => {
+        if (el.WeekDay == date.getDay()) {
+          setInTime(el.StartTime != null ? el.StartTime.substr(0, 5) : "00:00");
+          setOutTime(el.EndTime != null ? el.EndTime.substr(0, 5) : "00:00");
+        }
+      });
+    } else {
+      //Ажиллахгүй өдөр 00:00 харуулах
+      setInTime("00:00");
+      setOutTime("00:00");
+    }
+  };
+
+  const triggerNotifications = async () => {
+    var notif_date_in = new Date();
+    var notif_date_out = new Date();
+
+    notif_date_in.setHours(
+      parseInt(inTime?.substr(0, 2)),
+      parseInt(inTime?.slice(-2)),
+      0
+    );
+    notif_date_out.setHours(
+      parseInt(outTime?.substr(0, 2)),
+      parseInt(outTime?.slice(-2)),
+      0
+    );
+    // console.log("notif_date_in BEFORE ============>", notif_date_in);
+    // console.log("notif_date_out BEFORE ============>", notif_date_out);
+    notif_date_in = new Date(notif_date_in - 1000 * (60 * 5));
+    notif_date_out = new Date(notif_date_out - 1000 * (60 * 5));
+    // console.log("notif_date_in", notif_date_in.getHours());
+    // console.log("notif_date_out", notif_date_out.getMinutes());
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Мэдэгдэл 📬",
+        body: "Ажилд ирэх цагаа бүртгүүлнэ үү.",
+        data: {},
+      },
+      trigger: {
+        hour: notif_date_in.getHours(),
+        minute: notif_date_in.getMinutes(),
+        repeats: true,
+      },
+    });
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Мэдэгдэл 📬",
+        body: "Ажлаас явах цагаа бүртгүүлнэ үү.",
+        data: {},
+      },
+      trigger: {
+        hour: notif_date_out.getHours(),
+        minute: notif_date_out.getMinutes(),
+        repeats: true,
+      },
+    });
+  };
+
+  const localStorageCheckNotif = async () => {
+    if (isSwitchOn) {
+      triggerNotifications();
+      await AsyncStorage.setItem("local_notif", "yes");
+    } else {
+      await AsyncStorage.setItem("local_notif", "no");
+      Notifications.cancelAllScheduledNotificationsAsync();
+    }
+  };
+  useEffect(() => {
+    //CHECKED болсон үед ажиллах
+    localStorageCheckNotif();
+  }, [checkSwitch, isSwitchOn]);
+
   return (
     <MainContext.Provider
       value={{
@@ -370,6 +463,11 @@ export const MainStore = (props) => {
         registeredOutTime,
         setRegisteredInTime,
         setRegisteredOutTime,
+        isSwitchOn,
+        setIsSwitchOn,
+        dateByName,
+        inTime,
+        outTime,
       }}
     >
       {props.children}

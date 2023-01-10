@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useContext, useState } from "react";
-import { Button, Icon } from "@rneui/base";
+import { Icon } from "@rneui/base";
 import {
   FONT_FAMILY_BOLD,
   MAIN_BORDER_RADIUS,
@@ -20,13 +20,32 @@ import HeaderUser from "../components/HeaderUser";
 import { Switch } from "react-native-paper";
 const { StatusBarManager } = NativeModules;
 import MainContext from "../contexts/MainContext";
+import CustomSnackbar from "../components/CustomSnackbar";
+import CustomDialog from "../components/CustomDialog";
 
 const ProfileScreen = (props) => {
   const state = useContext(MainContext);
-  const [isSwitchOn, setIsSwitchOn] = useState(false);
 
-  const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
+  const onToggleSwitch = () => {
+    onToggleSnackBar("Ирц бүртгэл сануулах тохиргоо хийгдлээ");
+    state.setIsSwitchOn(!state.isSwitchOn);
+  };
 
+  const [visibleDialog, setVisibleDialog] = useState(false); //Dialog харуулах
+  const [dialogType, setDialogType] = useState("warning"); //Dialog харуулах төрөл
+  const [dialogText, setDialogText] = useState("Апп -с гарах уу?"); //Dialog -н текст
+
+  const [visibleSnack, setVisibleSnack] = useState(false);
+  const [snackBarMsg, setSnackBarMsg] = useState("");
+
+  //Snacbkbar харуулах
+  const onToggleSnackBar = (msg) => {
+    setVisibleSnack(!visibleSnack);
+    setSnackBarMsg(msg);
+  };
+
+  //Snacbkbar хаах
+  const onDismissSnackBar = () => setVisibleSnack(false);
   const menus = [
     {
       img: require("../../assets/profile/profile.png"),
@@ -41,11 +60,12 @@ const ProfileScreen = (props) => {
       active: true,
       render: (
         <Switch
-          value={isSwitchOn}
+          value={state.isSwitchOn}
           onValueChange={onToggleSwitch}
           color={MAIN_COLOR}
         />
       ),
+      action: () => onToggleSwitch(),
     },
     {
       img: require("../../assets/profile/pass.png"),
@@ -71,7 +91,7 @@ const ProfileScreen = (props) => {
       label: "Гарах",
       nav: "",
       active: true,
-      action: () => state.logout(),
+      action: () => setVisibleDialog(),
     },
   ];
 
@@ -83,6 +103,12 @@ const ProfileScreen = (props) => {
         backgroundColor: "#fff",
       }}
     >
+      <CustomSnackbar
+        visible={visibleSnack}
+        dismiss={onDismissSnackBar}
+        text={snackBarMsg}
+        topPos={30}
+      />
       <HeaderUser />
       <View style={styles.buttonsContainer}>
         {menus.map((el, index) => {
@@ -123,6 +149,20 @@ const ProfileScreen = (props) => {
           );
         })}
       </View>
+      <CustomDialog
+        visible={visibleDialog}
+        confirmFunction={() => {
+          setVisibleDialog(false);
+          state.logout();
+        }}
+        declineFunction={() => {
+          setVisibleDialog(false);
+        }}
+        text={dialogText}
+        confirmBtnText="Гарах"
+        DeclineBtnText="Хаах"
+        type={dialogType}
+      />
     </SafeAreaView>
   );
 };

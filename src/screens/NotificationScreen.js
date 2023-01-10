@@ -202,7 +202,7 @@ const NotificationScreen = () => {
           </View>
           <Image
             source={notif}
-            style={{ width: 40, height: 40, resizeMode: "contain" }}
+            style={{ width: 35, height: 35, resizeMode: "contain" }}
           />
         </View>
       </TouchableOpacity>
