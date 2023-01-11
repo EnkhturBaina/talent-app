@@ -4,49 +4,54 @@ import * as Font from "expo-font";
 import * as Notifications from "expo-notifications";
 import axios from "axios";
 import { SERVER_URL } from "../constant";
+import * as LocalAuthentication from "expo-local-authentication";
+import * as Location from "expo-location";
 
 const MainContext = React.createContext();
 
-//Notification тохиргоо
+//*****Notification тохиргоо
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true, //апп нээлттэй үед notification харагдах эсэх
+    shouldShowAlert: true, //*****апп нээлттэй үед notification харагдах эсэх
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
 });
 
 export const MainStore = (props) => {
-  const [userId, setUserId] = useState(""); //Нэвтэрсэн хэрэглэгчийн USER_ID
-  const [companyId, setCompanyId] = useState(""); //Нэвтэрсэн хэрэглэгчийн COMPANY_ID
-  const [uuid, setUuid] = useState(""); //UUID
-  const [isLoggedIn, setIsLoggedIn] = useState(false); //Нэвтэрсэн эсэх
-  const [email, setEmail] = useState("lmunkhdemberel@gmail.com"); //Утасны дугаар
-  const [token, setToken] = useState(""); //Хэрэглэгчийн TOKEN
-  const [userData, setUserData] = useState(""); //Хэрэглэгчийн мэдээлэл
-  const [isLoading, setIsLoading] = useState(true); //Апп ачааллах эсэх
-  const [last3Years, setLast3Years] = useState(""); //Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
-  const [isUseBiometric, setIsUseBiometric] = useState(false); //Biometric тохиргоо хийх эсэх
-  const [loginByBiometric, setLoginByBiometric] = useState(false); //Biometric тохиргоогоор нэвтрэх
-  const [loginErrorMsg, setLoginErrorMsg] = useState(""); // Login хуудсанд харагдах алдааны MSG
+  const [userId, setUserId] = useState(""); //*****Нэвтэрсэн хэрэглэгчийн USER_ID
+  const [companyId, setCompanyId] = useState(""); //*****Нэвтэрсэн хэрэглэгчийн COMPANY_ID
+  const [uuid, setUuid] = useState(""); //*****UUID
+  const [isLoggedIn, setIsLoggedIn] = useState(false); //*****Нэвтэрсэн эсэх
+  const [email, setEmail] = useState("lmunkhdemberel@gmail.com"); //*****Утасны дугаар
+  const [token, setToken] = useState(""); //*****Хэрэглэгчийн TOKEN
+  const [userData, setUserData] = useState(""); //*****Хэрэглэгчийн мэдээлэл
+  const [isLoading, setIsLoading] = useState(true); //*****Апп ачааллах эсэх
+  const [last3Years, setLast3Years] = useState(""); //*****Сүүлийн 3 жил-Сар (Хүсэлтэд ашиглах)
+  const [isUseBiometric, setIsUseBiometric] = useState(false); //*****Biometric тохиргоо хийх эсэх
+  const [loginByBiometric, setLoginByBiometric] = useState(false); //*****Biometric тохиргоогоор нэвтрэх
+  const [loginErrorMsg, setLoginErrorMsg] = useState(""); //*****Login хуудсанд харагдах алдааны MSG
 
-  const [expoPushToken, setExpoPushToken] = useState(""); // EXPO PUSH NOTIFICATION TOKEN Хадгалах
-  const [notification, setNotification] = useState(false); // Ирсэн Notification -ы мэдээлэл (OBJECT)
+  const [expoPushToken, setExpoPushToken] = useState(""); //*****EXPO PUSH NOTIFICATION TOKEN Хадгалах
+  const [notification, setNotification] = useState(false); //*****Ирсэн Notification -ы мэдээлэл (OBJECT)
 
-  const [attendanceList, setAttendanceList] = useState(""); //Ажилтны ирцийн мэдээлэл
-  const [loadingAttendanceList, setLoadingAttendanceList] = useState(true); //Ажилтны ирцийн мэдээлэл татаж байхад LOADER харуулах
+  const [attendanceList, setAttendanceList] = useState(""); //*****Ажилтны ирцийн мэдээлэл
+  const [loadingAttendanceList, setLoadingAttendanceList] = useState(true); //*****Ажилтны ирцийн мэдээлэл татаж байхад LOADER харуулах
 
-  const [location, setLocation] = useState(null); //Location мэдээлэл хадгалах
+  const [location, setLocation] = useState(null); //*****Location мэдээлэл хадгалах
 
-  const [registeredInTime, setRegisteredInTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажилдаа ирсэн цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
-  const [registeredOutTime, setRegisteredOutTime] = useState(null); // Нүүр хуудсанд ажилтны тухайн өдөр ажлаас явсан цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
+  const [registeredInTime, setRegisteredInTime] = useState(null); //*****Нүүр хуудсанд ажилтны тухайн өдөр ажилдаа ирсэн цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
+  const [registeredOutTime, setRegisteredOutTime] = useState(null); //*****Нүүр хуудсанд ажилтны тухайн өдөр ажлаас явсан цаг харуулах (Ажилтны ирцийн мэдээлэл татахад тооцоолж харуулах)
 
-  const [dateByName, setDateByName] = useState(null); //Тухайн өдрийн нэр
-  const [inTime, setInTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
-  const [outTime, setOutTime] = useState(null); //Тухайн ажилтны тухайн өдөр ажлаас явах цаг
+  const [dateByName, setDateByName] = useState(null); //*****Тухайн өдрийн нэр
+  const [inTime, setInTime] = useState(null); //*****Тухайн ажилтны тухайн өдөр ажилдаа ирэх цаг
+  const [outTime, setOutTime] = useState(null); //*****Тухайн ажилтны тухайн өдөр ажлаас явах цаг
 
-  const [isSwitchOn, setIsSwitchOn] = useState(false); //Ирц бүртгэл сануулах эсэх (Profile хуудаснаас тохируулах)
-  const [checkSwitch, setCheckSwitch] = useState(false); //Ирц бүртгэл STORAGE -с шалгасан эсэх
+  const [isSwitchOn, setIsSwitchOn] = useState(false); //*****Ирц бүртгэл сануулах эсэх (Profile хуудаснаас тохируулах)
+  const [checkSwitch, setCheckSwitch] = useState(false); //*****Ирц бүртгэл STORAGE -с шалгасан эсэх
+
+  const [biometrics, setBiometrics] = useState(false);
+  const [grantAccess, setGrantAccess] = useState(false);
 
   var date = new Date();
 
@@ -54,19 +59,20 @@ export const MainStore = (props) => {
   const responseListener = useRef();
 
   async function registerForPushNotificationsAsync() {
+    //*****Утаснаас ExpoNotificationToken Авах
     let token;
     const { status: existingStatus } =
-      await Notifications.getPermissionsAsync(); //Permission олгосон эсэх
+      await Notifications.getPermissionsAsync(); //*****Permission олгосон эсэх
     let finalStatus = existingStatus;
     if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync(); //Permission олгоогүй бол дахин асуух
+      const { status } = await Notifications.requestPermissionsAsync(); //*****Permission олгоогүй бол дахин асуух
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
       alert("Failed to get push token for push notification!");
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data; //expo-notification TOKEN авах
+    token = (await Notifications.getExpoPushTokenAsync()).data; //*****expo-notification TOKEN авах
     // console.log(token);
 
     return token;
@@ -87,20 +93,21 @@ export const MainStore = (props) => {
       case 6:
         return "Бямба";
       case 7:
-        return "Нум";
+        return "Ням";
       default:
         return "-";
     }
   };
 
   const generateLast3Years = () => {
+    //*****Сүүлийн 3 жилийн Он-Сар
     var current_date = new Date();
     var max = new Date().getFullYear();
-    var min = max - 2; // Одоогоос өмнөх 2 жил
-    var date = `${min}-${current_date.getMonth()}`; // Одоогоос өмнөх 2 жилийн энэ өдөр
-    var yearsWithMonths = []; //Жил-Сар түр хадгалах
+    var min = max - 2; //*****Одоогоос өмнөх 2 жил
+    var date = `${min}-${current_date.getMonth()}`; //*****Одоогоос өмнөх 2 жилийн энэ өдөр
+    var yearsWithMonths = []; //*****Жил-Сар түр хадгалах
     var month = 0;
-    //set both start and end date to first date of the month
+
     const end_date = new Date(date.replace(" ", " ,1 "));
     const start_date = new Date(
       new Date().getFullYear(),
@@ -128,22 +135,22 @@ export const MainStore = (props) => {
     registerForPushNotificationsAsync().then((token) => {
       // console.log("TOKEN", token);
       setExpoPushToken(token);
-    }); //TOKEN хадгалах
+    }); //*****TOKEN хадгалах
 
-    // Ирсэн Notification
+    //*****Ирсэн Notification
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        setNotification(notification); // Энд Notification -ы Object ирнэ
+        setNotification(notification); //*****Энд Notification -ы Object ирнэ
       });
 
-    // Ирсэн Notification дээр дарах
+    //*****Ирсэн Notification дээр дарах
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         // console.log(response);
       });
 
     return () => {
-      //Notification -г ажилласны дараа чөлөөлж өгөх (Заавал байна)
+      //*****Notification -г ажилласны дараа чөлөөлж өгөх (Заавал байна)
       Notifications.removeNotificationSubscription(
         notificationListener.current
       );
@@ -152,11 +159,18 @@ export const MainStore = (props) => {
   }, []);
 
   const getCustomFont = async () => {
-    // Custom FONT унших
+    //*****Custom FONT унших
     await Font.loadAsync({
       "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
       "Nunito-Light": require("../../assets/fonts/Nunito-Light.ttf"),
     });
+
+    //***** LOCATION мэдээлэл авах
+    (async () => {
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+
     generateLast3Years();
     checkUserData();
   };
@@ -165,7 +179,7 @@ export const MainStore = (props) => {
     getCustomFont();
   }, []);
 
-  // Хэрэглэгчийн ирцын мэдээлэл авах
+  //*****Хэрэглэгчийн ирцын мэдээлэл авах
   const getEmployeeAttendanceList = async (selected_date, local_token) => {
     if (!selected_date) {
       selected_date = {
@@ -196,11 +210,11 @@ export const MainStore = (props) => {
           if (response.data?.Type == 0) {
             response.data.Extra?.map((el) => {
               if (new Date().toISOString().slice(0, 10) == el.Date) {
-                // Ажилдаа ирсэн цаг НҮҮР ХУУДСАНД харуулах
+                //*****Ажилдаа ирсэн цаг НҮҮР ХУУДСАНД харуулах
                 setRegisteredInTime(
                   el.TimeIn != null && el.TimeIn?.substr(11, 5)
                 );
-                // Ажлаас явсан цаг НҮҮР ХУУДСАНД харуулах
+                //*****Ажлаас явсан цаг НҮҮР ХУУДСАНД харуулах
                 setRegisteredOutTime(
                   el.TimeOut != null && el.TimeOut?.substr(11, 5)
                 );
@@ -217,7 +231,6 @@ export const MainStore = (props) => {
         })
         .catch(function (error) {
           if (!error.status) {
-            // network error
             logout();
             setIsLoading(false);
             setLoginErrorMsg("Холболт салсан байна.");
@@ -234,7 +247,7 @@ export const MainStore = (props) => {
     }
   };
 
-  //Апп ажиллахад утасны local storage -с мэдээлэл шалгах
+  //*****Апп ажиллахад утасны local storage -с мэдээлэл шалгах
   const checkUserData = async () => {
     try {
       await AsyncStorage.getItem("uuid").then(async (uuid_value) => {
@@ -243,8 +256,10 @@ export const MainStore = (props) => {
         await AsyncStorage.getItem("use_bio").then(async (bio_value) => {
           // console.log("BIO VALUE ====>", bio_value);
           if (bio_value == "yes") {
+            // *****Face ID аар нэвтрэх CHECK хийгдсэн үед баталгаажуулаад нэвтрэх
             setIsUseBiometric(true);
             setLoginByBiometric(true);
+            confirmBio();
           } else {
             getUserDataLocalStorage(uuid_value);
             setIsUseBiometric(false);
@@ -259,9 +274,8 @@ export const MainStore = (props) => {
     }
   };
 
-  //Апп ажиллахад утасны local storage -с зөвхөн хэрэглэгчийн мэдээлэл авах
+  //*****Апп ажиллахад утасны local storage -с зөвхөн хэрэглэгчийн мэдээлэл авах
   const getUserDataLocalStorage = async (uuid_value) => {
-    // setIsLoading(true);
     await AsyncStorage.getItem("user").then(async (user_value) => {
       // console.log("user_value VALUE ====>", user_value);
       if (user_value != null) {
@@ -273,9 +287,6 @@ export const MainStore = (props) => {
         setUserId(JSONValue.user?.id);
         setCompanyId(JSONValue.user?.GMCompanyId);
         setUserData(JSONValue.user);
-
-        // setIsLoggedIn(true);
-        // setIsLoading(false);
       } else {
         setIsLoggedIn(false);
         setIsLoading(false);
@@ -284,19 +295,23 @@ export const MainStore = (props) => {
   };
 
   useEffect(() => {
-    getUserUUID(userData?.PersonalEmail, token, uuid);
-    calcNotificationTime();
+    //***** userData болон token Утгатай болсон үед ажиллах
+    userData != "" &&
+      token != "" &&
+      getUserUUID(userData?.PersonalEmail, token, uuid);
+    userData != "" && calcNotificationTime();
   }, [userData]);
 
   const logout = () => {
     setIsLoggedIn(false);
     setLoginErrorMsg("");
-    // AsyncStorage.removeItem("user");
-    // AsyncStorage.removeItem("use_bio");
+    //***** Profile -с гарах дарсан үед утасны LOCALSTORE -с user, user_bio устгах
+    AsyncStorage.removeItem("user");
+    AsyncStorage.removeItem("use_bio");
     setLoginByBiometric(false);
   };
 
-  // Тухайн хэрэглэгчийн утсанд хадгалагдсан UUID == DATABASE.UUID ижил байгаа эсэхийг шалгах
+  //*****Тухайн хэрэглэгчийн утсанд хадгалагдсан UUID == DATABASE.UUID ижил байгаа эсэхийг шалгах
   const getUserUUID = async (local_email, local_token, uuid_value) => {
     await axios({
       method: "post",
@@ -327,11 +342,11 @@ export const MainStore = (props) => {
         }
       })
       .catch(function (error) {
+        console.log("err", error);
         if (!error.status) {
-          // network error
           logout();
           setIsLoading(false);
-          setLoginErrorMsg("Холболт салсан байна.");
+          setLoginErrorMsg("Холболт салсан байна..");
         } else if (error.response?.status == "401") {
           AsyncStorage.removeItem("use_bio");
           setLoginErrorMsg("Холболт салсан байна. Та дахин нэвтэрнэ үү.");
@@ -342,7 +357,7 @@ export const MainStore = (props) => {
   };
 
   const calcNotificationTime = async () => {
-    // Утасны STORAGE -д Ирц бүртгэл сануулах тохиргоо CHECK хийгдсэн байгаа эсэх
+    //*****Утасны STORAGE -д Ирц бүртгэл сануулах тохиргоо CHECK хийгдсэн байгаа эсэх
     await AsyncStorage.getItem("local_notif").then(async (value) => {
       if (value == "yes") {
         setIsSwitchOn(true);
@@ -350,10 +365,10 @@ export const MainStore = (props) => {
       setCheckSwitch(!checkSwitch);
     });
 
-    //Тухайн өдрийн нэрийг харуулах
+    //*****Тухайн өдрийн нэрийг харуулах
     setDateByName(whatDay());
 
-    //Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
+    //*****Ажилтны тухайн өдрийн ажилдаа ирэх явах цагийг авах
     if (userData?.attendance_type?.details) {
       userData?.attendance_type?.details.map((el) => {
         if (el.WeekDay == date.getDay()) {
@@ -362,14 +377,14 @@ export const MainStore = (props) => {
         }
       });
     } else {
-      //Ажиллахгүй өдөр 00:00 харуулах
+      //*****Ажиллахгүй өдөр 00:00 харуулах
       setInTime("00:00");
       setOutTime("00:00");
     }
   };
 
   const triggerNotifications = async () => {
-    // Ажил ирэх, явах цаг 5 минутын өмнө мэдэгдэхийг тохируулах
+    //*****Ажил ирэх, явах цаг 5 минутын өмнө мэдэгдэхийг тохируулах
     var notif_date_in = new Date();
     var notif_date_out = new Date();
 
@@ -421,13 +436,48 @@ export const MainStore = (props) => {
       await AsyncStorage.setItem("local_notif", "yes");
     } else {
       await AsyncStorage.setItem("local_notif", "no");
-      // local Notification болиулах
+      //*****Profile -с Ирц бүртгэл сануулах тохиргоо UNCHECK болсон үед local Notification болиулах
       Notifications.cancelAllScheduledNotificationsAsync();
     }
   };
   useEffect(() => {
     localStorageCheckNotif();
   }, [checkSwitch, isSwitchOn]);
+
+  //*****BIOMETRIC тохиргоогоор нэвтрэх
+  const confirmBio = () => {
+    (async () => {
+      //*****face || fingerprint дэмждэг эсэх
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      // console.log("compatible", compatible);
+      setBiometrics(compatible);
+      //*****face || fingerprint байгаа эсэх
+      LocalAuthentication.isEnrolledAsync().then(
+        (hasFingerprintOrFacialData) => {
+          if (!hasFingerprintOrFacialData) {
+            setIsLoggedIn(true);
+            setIsLoading(false);
+          } else {
+            compatible
+              ? (async () => {
+                  //*****face || fingerprint уншуулсан эсэх
+                  const auth = await LocalAuthentication.authenticateAsync();
+                  // console.log("auth", auth);
+                  if (auth.success) {
+                    setGrantAccess(true);
+                    getUserDataLocalStorage();
+                  } else {
+                    setGrantAccess(false);
+                  }
+                })()
+              : () => {
+                  getUserDataLocalStorage();
+                };
+          }
+        }
+      );
+    })();
+  };
 
   return (
     <MainContext.Provider
@@ -470,6 +520,7 @@ export const MainStore = (props) => {
         dateByName,
         inTime,
         outTime,
+        confirmBio,
       }}
     >
       {props.children}

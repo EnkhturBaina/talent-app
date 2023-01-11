@@ -31,15 +31,15 @@ import Empty from "../components/Empty";
 const AttendanceScreen = (props) => {
   const state = useContext(MainContext);
   const [selectedDate, setSelectedDate] = useState(state.last3Years[0]);
-  const [data, setData] = useState(""); //BottomSheet рүү дамжуулах Дата
-  const [uselessParam, setUselessParam] = useState(false); //BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
-  const [displayName, setDisplayName] = useState(""); //LOOKUP -д харагдах утга (display value)
+  const [data, setData] = useState(""); //*****BottomSheet рүү дамжуулах Дата
+  const [uselessParam, setUselessParam] = useState(false); //*****BottomSheet -г дуудаж байгааг мэдэх гэж ашиглаж байгамоо
+  const [displayName, setDisplayName] = useState(""); //*****LOOKUP -д харагдах утга (display value)
   const [activeSections, setActiveSections] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const setLookupData = (data, display) => {
-    setData(data); //Lookup -д харагдах дата
-    setDisplayName(display); //Lookup -д харагдах датаны текст талбар
+    setData(data); //*****Lookup -д харагдах дата
+    setDisplayName(display); //*****Lookup -д харагдах датаны текст талбар
     setUselessParam(!uselessParam);
   };
 

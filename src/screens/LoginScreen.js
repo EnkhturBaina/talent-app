@@ -23,16 +23,11 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import * as LocalAuthentication from "expo-local-authentication";
-import * as Location from "expo-location";
 
 const LoginScreen = (props) => {
   const state = useContext(MainContext);
   const [password, setPassword] = useState("Credo1234@");
   const [hidePassword, setHidePassword] = useState(true);
-
-  const [biometrics, setBiometrics] = useState(false);
-  const [grantAccess, setGrantAccess] = useState(false);
 
   const [visibleSnack, setVisibleSnack] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState("");
@@ -54,60 +49,6 @@ const LoginScreen = (props) => {
 
   const hideShowPassword = () => {
     setHidePassword(!hidePassword);
-  };
-
-  const confirmBio = () => {
-    (async () => {
-      // face || fingerprint дэмждэг эсэх
-      const compatible = await LocalAuthentication.hasHardwareAsync();
-      // console.log("compatible", compatible);
-      setBiometrics(compatible);
-      // face || fingerprint байгаа эсэх
-      LocalAuthentication.isEnrolledAsync().then(
-        (hasFingerprintOrFacialData) => {
-          if (!hasFingerprintOrFacialData) {
-            state.setIsLoggedIn(true);
-            state.setIsLoading(false);
-          } else {
-            compatible
-              ? (async () => {
-                  // face || fingerprint уншуулсан эсэх
-                  const auth = await LocalAuthentication.authenticateAsync();
-                  // console.log("auth", auth);
-                  if (auth.success) {
-                    setGrantAccess(true);
-                    state.getUserDataLocalStorage();
-                  } else {
-                    setGrantAccess(false);
-                  }
-                })()
-              : () => {
-                  state.getUserDataLocalStorage();
-                };
-          }
-        }
-      );
-    })();
-  };
-
-  const resetUUID = async () => {
-    await axios({
-      method: "post",
-      url: `${SERVER_URL}/mobile/reset`,
-      headers: {
-        Authorization: `Bearer ${state.token}`,
-      },
-      data: {
-        GMCompanyId: 1,
-        ERPEmployeeId: 1,
-      },
-    })
-      .then(async (response) => {
-        console.log("resetUUID =====>", response.data);
-      })
-      .catch(function (error) {
-        console.log("resetUUID error=====>", error);
-      });
   };
 
   const resetPassword = async () => {
@@ -165,7 +106,6 @@ const LoginScreen = (props) => {
           password: password,
           MobileUUID: state.uuid ? state.uuid : tempUUID,
           ExponentPushToken: state.expoPushToken,
-          // MobileUUID: "812206e1-7a92-4f7d-98b4-10e06cb5dfee",
         },
       })
         .then(async (response) => {
@@ -176,7 +116,7 @@ const LoginScreen = (props) => {
               state.setToken(response.data.Extra?.access_token);
               state.setUserId(response.data.Extra?.user?.id);
               state.setCompanyId(response.data.Extra?.user?.GMCompanyId);
-              // Login Хийсэн User -н Data -г Local Storage -д хадгалах
+              //*****Login Хийсэн User -н Data -г Local Storage -д хадгалах
               await AsyncStorage.setItem(
                 "user",
                 JSON.stringify({
@@ -184,26 +124,23 @@ const LoginScreen = (props) => {
                   user: response.data.Extra?.user,
                 })
               ).then(async (value) => {
-                // UUID -г Local Storage -д хадгалах
+                //*****UUID -г Local Storage -д хадгалах
                 await AsyncStorage.setItem(
                   "uuid",
                   state.uuid ? state.uuid : tempUUID
                 ).then(async (value) => {
                   if (state.isUseBiometric) {
-                    // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
+                    //*****Biometric ашиглах CHECK хийгдсэн үед Local Storage -д хадгалах
                     await AsyncStorage.setItem("use_bio", "yes").then(
                       (value) => {
-                        confirmBio();
-                        // props.navigation.navigate("BiometricScreen");
+                        state.confirmBio();
                       }
                     );
                   } else {
-                    // Biometric ашиглэх CHECK хийгдсэн үед Local Storage -д хадгалах
+                    //*****Biometric ашиглах CHECK хийгдээгүй үед Local Storage -д хадгалах
                     await AsyncStorage.setItem("use_bio", "no").then(
                       (value) => {
                         state.getUserDataLocalStorage();
-                        // state.setIsLoggedIn(true);
-                        // state.setIsLoading(false);
                       }
                     );
                   }
@@ -233,15 +170,6 @@ const LoginScreen = (props) => {
     }
   };
 
-  useEffect(() => {
-    state.loginByBiometric && confirmBio();
-
-    (async () => {
-      let location = await Location.getCurrentPositionAsync({});
-      state.setLocation(location);
-    })();
-  }, []);
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS == "ios" ? "padding" : ""}
@@ -264,7 +192,6 @@ const LoginScreen = (props) => {
         <View style={styles.loginImageContainer}>
           <Image style={styles.loginImg} source={talent_logo} />
         </View>
-        {/* <Button title="RESET UUID" onPress={() => resetUUID()} /> */}
         {state.loginErrorMsg != "" ? (
           <Text
             style={{
@@ -419,11 +346,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginTop: 10,
     padding: 0,
-  },
-  searchIcon: {
-    resizeMode: "contain",
-    width: "13%",
-    marginVertical: 20,
   },
   stackSection2: {
     flexDirection: "row",

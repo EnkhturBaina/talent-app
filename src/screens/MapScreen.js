@@ -62,11 +62,11 @@ const MapScreen = () => {
         // console.log("track Attendance ======>", response.data);
         if (response.data?.Type == 0) {
           type == "IN"
-            ? // Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
+            ? //*****Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
               state.setRegisteredInTime(
                 response.data?.Extra?.TimeIn?.substr(11, 5)
               )
-            : // Ажлаас явсан цаг бүртгүүлэх үед харуулах
+            : //*****Ажлаас явсан цаг бүртгүүлэх үед харуулах
               state.setRegisteredOutTime(
                 response.data?.Extra?.TimeOut?.substr(11, 5)
               );

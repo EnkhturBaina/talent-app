@@ -37,7 +37,7 @@ const TaskScreen = () => {
   const [loadingTask, setLoadingTask] = useState(true);
 
   const [refreshing, setRefreshing] = useState(false);
-  //Screen LOAD хийхэд дахин RENDER хийх
+  //*****Screen LOAD хийхэд дахин RENDER хийх
   const isFocused = useIsFocused();
 
   const wait = (timeout) => {
@@ -126,7 +126,7 @@ const TaskScreen = () => {
   };
   const completeTask = async (erp_employee_id, task_id) => {
     var stateId = null;
-    //Дуусгасан төлөвийн ID
+    //*****Дуусгасан төлөвийн ID
     stateList.filter((obj) => {
       if (obj.Name == "Дуусгасан") {
         stateId = obj.id;

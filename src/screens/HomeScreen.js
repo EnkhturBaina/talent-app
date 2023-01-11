@@ -36,7 +36,7 @@ import CustomDialog from "../components/CustomDialog";
 
 const HomeScreen = (props) => {
   const state = useContext(MainContext);
-  const [time, setTime] = useState(); //Live Цаг
+  const [time, setTime] = useState(); //*****Live Цаг
   var date = new Date();
   const [visibleDialog, setVisibleDialog] = useState(false);
   const [dialogType, setDialogType] = useState("success");
@@ -101,11 +101,11 @@ const HomeScreen = (props) => {
         // console.log("track Attendance ======>", response.data);
         if (response.data?.Type == 0) {
           type == "IN"
-            ? // Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
+            ? //*****Ажилдаа ирсэн цаг бүртгүүлэх үед харуулах
               state.setRegisteredInTime(
                 response.data?.Extra?.TimeIn?.substr(11, 5)
               )
-            : // Ажлаас явсан цаг бүртгүүлэх үед харуулах
+            : //*****Ажлаас явсан цаг бүртгүүлэх үед харуулах
               state.setRegisteredOutTime(
                 response.data?.Extra?.TimeOut?.substr(11, 5)
               );
@@ -143,13 +143,6 @@ const HomeScreen = (props) => {
       }}
     >
       <HeaderUser />
-      {/* <Text>{state.expoPushToken}</Text>
-      <Button
-        title="Notification"
-        onPress={async () => {
-          await state.sendPushNotification(state.expoPushToken);
-        }}
-      /> */}
       <ScrollView contentContainerStyle={{ paddingBottom: 10 }} bounces={false}>
         <View style={styles.mainContainer}>
           <View style={styles.attendanceContainer}>

@@ -39,19 +39,19 @@ const EmployeesScreen = (props) => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
   const [searchVal, setSearchVal] = useState("");
-  const sheetRef = useRef(); //Bottomsheet
+  const sheetRef = useRef(); //*****Bottomsheet
   const [filteredData, setFilteredData] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [favList, setFavList] = useState([]);
 
-  // Утасны STORAGE -с PIN хийгдсэн ажилчдыг авах
+  //*****Утасны STORAGE -с PIN хийгдсэн ажилчдыг авах
   const getFavListUsers = async () => {
     await AsyncStorage.getItem("fav_list").then((fav_list) => {
       setFavList(JSON.parse(fav_list));
     });
   };
 
-  // PIN state -д ажилтан нэмэх, хасах
+  //*****PIN state -д ажилтан нэмэх, хасах
   const addRemoveUserFaveList = async () => {
     var tempArr = [];
     if (favList == null) {
@@ -69,13 +69,13 @@ const EmployeesScreen = (props) => {
     }
   };
 
-  // Утасны STORAGE -д PIN ажилчидыг state -ээс update хийх
+  //*****Утасны STORAGE -д PIN ажилчидыг state -ээс update хийх
   const setLocalStorageFavList = async () => {
     await AsyncStorage.setItem("fav_list", JSON.stringify(favList));
   };
 
   useEffect(() => {
-    // PIN ажилчидыг state хоосон үед ажиллах
+    //*****PIN ажилчидыг state хоосон үед ажиллах
     favList != "" && setLocalStorageFavList();
   }, [favList]);
 
@@ -139,7 +139,6 @@ const EmployeesScreen = (props) => {
       style={{
         flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBarManager.HEIGHT : 0,
-        // marginBottom: Dimensions.get("window").height * 0.58,
         backgroundColor: "#fff",
       }}
     >
@@ -218,8 +217,6 @@ const EmployeesScreen = (props) => {
               indexContainerStyle={{
                 width: 30,
                 height: 300,
-                // position: "absolute",
-                // right: -20,
               }}
               indexLetterContainerStyle={{
                 width: "100%",
@@ -266,8 +263,8 @@ const EmployeesScreen = (props) => {
       <RBSheet
         ref={sheetRef}
         height={300}
-        closeOnDragDown={true} //sheet -г доош чирж хаах
-        closeOnPressMask={true} //sheet -н гадна дарж хаах
+        closeOnDragDown={true} //*****sheet -г доош чирж хаах
+        closeOnPressMask={true} //*****sheet -н гадна дарж хаах
         customStyles={{
           container: {
             backgroundColor: "#fff",
@@ -346,10 +343,6 @@ const styles = StyleSheet.create({
     width: 80,
     maxWidth: 80,
   },
-  notFoundText: {
-    fontFamily: FONT_FAMILY_BOLD,
-    textAlign: "center",
-  },
   searchBar: {
     marginHorizontal: 20,
     backgroundColor: "#fff",
@@ -360,7 +353,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 50,
-    // resizeMode: "contain",
     overflow: "hidden",
   },
   contactsContainer: {
@@ -379,14 +371,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 50,
-    // resizeMode: "contain",
     overflow: "hidden",
   },
   userImgBottomSheet: {
     width: 80,
     height: 80,
     borderRadius: 50,
-    // resizeMode: "contain",
     overflow: "hidden",
   },
   actionIcon: {
@@ -401,7 +391,6 @@ const styles = StyleSheet.create({
     borderRadius: MAIN_BORDER_RADIUS,
     borderColor: MAIN_COLOR_GRAY,
     borderWidth: 1,
-    // width: "90%",
     padding: 10,
     marginBottom: 5,
     marginHorizontal: 5,
@@ -422,7 +411,6 @@ const styles = StyleSheet.create({
   sectionHeaderContainer: {
     backgroundColor: MAIN_COLOR_GRAY,
     marginBottom: 5,
-    // width: "90%",
   },
   sectionHeaderLabel: {
     fontFamily: FONT_FAMILY_BOLD,
